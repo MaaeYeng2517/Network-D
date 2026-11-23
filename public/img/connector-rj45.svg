@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24">
+  <rect width="36" height="24" fill="#0b0f14"/>
+  <!-- RJ-45 8P8C connector -->
+  <rect x="3" y="4" width="30" height="16" rx="1" fill="none" stroke="#3ea6ff" stroke-width="1.5"/>
+  <!-- 8 gold contacts -->
+  <g stroke="#ffd700" stroke-width="1.2">
+    <line x1="5" y1="5" x2="5" y2="21"/>
+    <line x1="8.5" y1="5" x2="8.5" y2="21"/>
+    <line x1="12" y1="5" x2="12" y2="21"/>
+    <line x1="15.5" y1="5" x2="15.5" y2="21"/>
+    <line x1="19" y1="5" x2="19" y2="21"/>
+    <line x1="22.5" y1="5" x2="22.5" y2="21"/>
+    <line x1="26" y1="5" x2="26" y2="21"/>
+    <line x1="29.5" y1="5" x2="29.5" y2="21"/>
+  </g>
+  <!-- Release tab -->
+  <path d="M18 3 L20 1 L16 1 Z" fill="#3ea6ff"/>
+</svg>

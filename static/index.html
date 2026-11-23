@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iPerf3 Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #161d26; --panel2: #1d2632; --border: #2a3543;
+      --text: #e6edf3; --muted: #8b98a9; --accent: #fb923c; --accent2: #ea580c;
+      --ok: #3fb950; --warn: #d29922; --err: #f85149;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 20px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .topbar .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--text); }
+    .logo { width: 28px; height: 28px; display: block; }
+    .topbar .user { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+    .topbar .btn { border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .topbar .btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+    .topbar .btn.secondary:hover { background: var(--border); }
+    .grid { display: grid; grid-template-columns: 380px 1fr; gap: 18px; align-items: start; }
+    @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+    .right { display: flex; flex-direction: column; gap: 18px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .card > .hd { padding: 11px 16px; border-bottom: 1px solid var(--border);
+      font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px;
+      display: flex; align-items: center; gap: 10px; }
+    .card .hd .spacer { flex: 1; }
+    .card .bd { padding: 16px; }
+    label.f { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 5px; font-weight: 600; }
+    label.f:first-child { margin-top: 0; }
+    input, select { width: 100%; padding: 9px 11px; background: var(--panel2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 7px; font-size: 14px; outline: none; }
+    input:focus, select:focus { border-color: var(--accent); }
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; }
+    .seg { display: flex; background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
+    .seg button { flex: 1; padding: 9px; border: none; background: transparent; color: var(--muted);
+      border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .seg button.active { background: var(--accent); color: #04121f; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip { padding: 7px 11px; background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 12.5px; cursor: pointer; color: var(--muted); transition: .12s; user-select: none; }
+    .chip:hover { border-color: var(--accent); color: var(--text); }
+    .chip.active { background: var(--accent2); border-color: var(--accent); color: #fff; }
+    .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 6px; }
+    .opts label { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; color: var(--text); }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .hidden { display: none; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); display: inline-block; }
+    .dot.run { background: var(--ok); box-shadow: 0 0 8px var(--ok); animation: pulse 1s infinite; }
+    .dot.err { background: var(--err); }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+    .cmd-preview { background: #0b0f14; border: 1px solid var(--border); border-radius: 8px;
+      padding: 13px; font-family: var(--mono); font-size: 13px; color: #9fe0ff; word-break: break-all;
+      min-height: 44px; display: flex; align-items: flex-start; gap: 10px; }
+    .cmd-preview .txt { flex: 1; }
+    .btn { border: none; border-radius: 7px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn.primary { background: var(--accent); color: #04121f; }
+    .btn.primary:hover { background: var(--accent2); color: #fff; }
+    .btn.danger { background: #3a1b1e; color: #ff8f8f; border: 1px solid #5a2a2e; }
+    .btn.danger:hover { background: #4a2024; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .actions { display: flex; gap: 10px; margin-top: 14px; }
+    .copy { background: transparent; border: 1px solid var(--border); color: var(--muted);
+      border-radius: 6px; padding: 5px 9px; font-size: 12px; cursor: pointer; }
+    .copy:hover { border-color: var(--accent); color: var(--text); }
+    .chart-stats { display: flex; gap: 22px; padding: 12px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .stat .v { font-size: 19px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+    .stat .v.big { color: var(--accent); font-size: 24px; }
+    .stat .v small { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .chart-wrap { padding: 6px 10px 10px; }
+    .console { background: #0b0f14; font-family: var(--mono); font-size: 13px;
+      padding: 14px; border-radius: 0 0 10px 10px; white-space: pre-wrap; word-break: break-word;
+      max-height: 300px; overflow-y: auto; color: #c9d4e0; line-height: 1.55; }
+    .console .l { white-space: pre-wrap; }
+    .console .sys { color: var(--muted); }
+    .console .exit-ok { color: var(--ok); }
+    .console .exit-err { color: var(--err); }
+    .hist { max-height: 260px; overflow-y: auto; }
+    .hist .item { padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex;
+      align-items: center; gap: 12px; font-size: 13px; }
+    .hist .item:hover { background: var(--panel2); }
+    .hist .item.sel { background: var(--panel2); box-shadow: inset 3px 0 0 var(--accent); }
+    .hist .item .t { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+    .hist .item .m { flex: 1; }
+    .hist .item .m b { color: var(--text); }
+    .hist .item .rate { font-family: var(--mono); color: var(--accent); font-weight: 600; }
+    .hist .empty { padding: 18px 16px; color: var(--muted); font-size: 13px; }
+    .status-line { position: fixed; bottom: 10px; right: 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <img src="logo.svg" class="logo" alt="logo">
+        iPerf3 Dashboard
+      </div>
+      <div class="user">
+        <span id="userName"></span>
+        <button class="btn secondary" onclick="logout()">Logout</button>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="hd">Build iPerf3 Command</div>
+        <div class="bd">
+          <label class="f">Mode</label>
+          <div class="seg">
+            <button id="roleClient" class="active" onclick="setRole('client')">Client</button>
+            <button id="roleServer" onclick="setRole('server')">Server</button>
+          </div>
+
+          <label class="f">Preset</label>
+          <div class="chips" id="presets"></div>
+
+          <div id="clientFields">
+            <label class="f">Target Host</label>
+            <input id="host" placeholder="192.168.1.10 or example.com" />
+          </div>
+
+          <div class="row">
+            <div>
+              <label class="f">Port (-p)</label>
+              <input type="number" id="port" value="5201" min="1" max="65535" />
+            </div>
+            <div id="protoRow">
+              <label class="f">Protocol</label>
+              <select id="proto">
+                <option value="tcp">TCP</option>
+                <option value="udp">UDP</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="clientOnly">
+            <div class="row">
+              <div>
+                <label class="f">Duration -t (s)</label>
+                <input type="number" id="time" value="10" min="1" />
+              </div>
+              <div>
+                <label class="f">Streams -P</label>
+                <input type="number" id="streams" value="1" min="1" max="128" />
+              </div>
+            </div>
+
+            <div id="udpFields" class="hidden">
+              <label class="f">Bandwidth -b (e.g. 10M, 100m, 1G)</label>
+              <input id="bandwidth" value="10M" />
+            </div>
+
+            <label class="f">Omit -O (s)</label>
+            <input type="number" id="omit" value="1" min="0" />
+
+            <label class="f">Options</label>
+            <div class="opts">
+              <label><input type="checkbox" id="reverse" /> Reverse -R</label>
+              <label><input type="checkbox" id="json" /> JSON -J</label>
+              <label><input type="checkbox" id="v6" /> IPv6 -6</label>
+              <label><input type="checkbox" id="bidir" /> Bidir --bidir</label>
+              <label><input type="checkbox" id="oneline" /> Oneline -1</label>
+              <label><input type="checkbox" id="dash" /> Verbose -V</label>
+            </div>
+            <div id="jsonHint" class="hint hidden">* JSON mode disables live chart</div>
+
+            <label class="f">Extra args</label>
+            <input id="extra" placeholder="-w 2M --cport 5300" />
+          </div>
+
+          <div id="serverFields" class="hidden">
+            <label class="f">Extra args</label>
+            <input id="serverExtra" placeholder="-1 (exit after one test)" />
+            <div class="hint">Server runs until stopped; shows live output per connection</div>
+          </div>
+
+          <label class="f">Command Preview</label>
+          <div class="cmd-preview">
+            <span class="txt" id="cmdPreview">iperf3 -c <host> ...</span>
+            <button class="copy" onclick="copyCmd()">Copy</button>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="btnRun" onclick="run()">Run</button>
+            <button class="btn danger hidden" id="btnStop" onclick="stop()">Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="card">
+          <div class="hd">
+            Real-time Throughput
+            <span class="spacer" />
+            <span id="liveBadge" style="font-family:var(--mono);color:var(--muted)"></span>
+          </div>
+          <div class="chart-stats">
+            <div class="stat"><div class="k">Current</div><div class="v big" id="statCur">—</div></div>
+            <div class="stat"><div class="k">Average</div><div class="v" id="statAvg">—</div></div>
+            <div class="stat"><div class="k">Total</div><div class="v" id="statTotal">—</div></div>
+            <div class="stat"><div class="k">Duration</div><div class="v" id="statDur">—</div></div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="hd">
+            Live Output
+            <span class="spacer" />
+            <button class="copy" onclick="clearConsole()">Clear</button>
+            <button class="copy" onclick="copyConsole()">Copy</button>
+          </div>
+          <div class="console" id="console"></div>
+        </div>
+
+        <div class="card">
+          <div class="hd">
+            History
+            <span class="spacer" />
+            <button class="copy" onclick="clearHistory()">Clear History</button>
+          </div>
+          <div class="hist" id="history"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-line">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText" style="color:var(--muted)">Ready</span>
+      <span id="verInfo" style="color:var(--muted);font-family:var(--mono)"></span>
+    </div>
+  </div>
+
+  <script>
+    const PRESETS = [
+      { id: 'tcp', name: 'TCP Throughput', role: 'client', proto: 'tcp' },
+      { id: 'udp', name: 'UDP Bandwidth', role: 'client', proto: 'udp' },
+      { id: 'rev', name: 'Reverse (Download)', role: 'client', proto: 'tcp', reverse: true },
+      { id: 'multi', name: 'Multi-stream (4)', role: 'client', proto: 'tcp', streams: '4' },
+      { id: 'bidi', name: 'Bidirectional', role: 'client', proto: 'tcp', bidir: true },
+      { id: 'server', name: 'Start Server', role: 'server' },
+    ];
+
+    let cfg = {
+      role: 'client', host: '', port: '5201', proto: 'tcp', time: '10', streams: '1',
+      bandwidth: '10M', omit: '1', reverse: false, json: false, v6: false, bidir: false,
+      oneline: false, dash: false, extra: '', serverExtra: '',
+    };
+    let preset = 'tcp';
+    let series = [];
+    let stats = { cur: null, avg: null, totalMB: null, dur: null };
+    let running = false;
+    let evtSource = null;
+    let currentId = null;
+    let closed = false;
+    let mounted = true;
+
+    function $(id) { return document.getElementById(id); }
+
+    function setRole(role) {
+      cfg.role = role;
+      $('roleClient').classList.toggle('active', role === 'client');
+      $('roleServer').classList.toggle('active', role === 'server');
+      $('clientFields').classList.toggle('hidden', role === 'server');
+      $('clientOnly').classList.toggle('hidden', role === 'server');
+      $('serverFields').classList.toggle('hidden', role === 'client');
+      $('protoRow').classList.toggle('hidden', role === 'server');
+      preset = '';
+      updatePresets();
+      updatePreview();
+    }
+
+    function updatePresets() {
+      const html = PRESETS.map(p => `
+        <div class="chip${preset === p.id ? ' active' : ''}" onclick="applyPreset('${p.id}')">${p.name}</div>
+      `).join('');
+      $('presets').innerHTML = html;
+    }
+
+    function applyPreset(id) {
+      const p = PRESETS.find(x => x.id === id);
+      if (!p) return;
+      preset = id;
+      updatePresets();
+      cfg.role = p.role;
+      setRole(p.role);
+      if (p.reverse !== undefined) cfg.reverse = p.reverse;
+      if (p.bidir !== undefined) cfg.bidir = p.bidir;
+      if (p.streams) cfg.streams = String(p.streams);
+      if (p.proto) cfg.proto = p.proto;
+      $('json').checked = false; cfg.json = false;
+      syncUI();
+      updatePreview();
+    }
+
+    function syncUI() {
+      $('host').value = cfg.host;
+      $('port').value = cfg.port;
+      $('proto').value = cfg.proto;
+      $('time').value = cfg.time;
+      $('streams').value = cfg.streams;
+      $('bandwidth').value = cfg.bandwidth;
+      $('omit').value = cfg.omit;
+      $('reverse').checked = cfg.reverse;
+      $('json').checked = cfg.json;
+      $('v6').checked = cfg.v6;
+      $('bidir').checked = cfg.bidir;
+      $('oneline').checked = cfg.oneline;
+      $('dash').checked = cfg.dash;
+      $('extra').value = cfg.extra;
+      $('serverExtra').value = cfg.serverExtra;
+      $('jsonHint').classList.toggle('hidden', !cfg.json);
+      $('udpFields').classList.toggle('hidden', cfg.proto !== 'udp' || cfg.role === 'server');
+    }
+
+    function upd(k, val) {
+      cfg[k] = val;
+      preset = '';
+      updatePresets();
+      updatePreview();
+    }
+
+    function buildArgv() {
+      if (cfg.role === 'server') {
+        const argv = ['-s', '-p', String(cfg.port || '5201')];
+        const ex = (cfg.serverExtra || '').trim();
+        if (ex) argv.push(...ex.split(/\s+/).filter(Boolean));
+        return argv;
+      }
+      const host = (cfg.host || '').trim();
+      if (!host) return null;
+      const argv = ['-c', host, '-p', String(cfg.port || '5201'), '-t', String(cfg.time || '10')];
+      if (cfg.proto === 'udp') argv.push('-u', '-b', cfg.bandwidth || '10M');
+      if (Number(cfg.streams) > 1) argv.push('-P', String(cfg.streams));
+      if (cfg.omit && Number(cfg.omit) > 0) argv.push('-O', String(cfg.omit));
+      if (cfg.reverse) argv.push('-R');
+      if (cfg.json) argv.push('-J');
+      if (cfg.v6) argv.push('-6');
+      if (cfg.bidir) argv.push('--bidir');
+      if (cfg.oneline) argv.push('-1');
+      if (cfg.dash) argv.push('-V');
+      const ex = (cfg.extra || '').trim();
+      if (ex) argv.push(...ex.split(/\s+/).filter(Boolean));
+      return argv;
+    }
+
+    function updatePreview() {
+      const argv = buildArgv();
+      $('cmdPreview').textContent = argv ? 'iperf3 ' + argv.join(' ') : 'iperf3 -c <host> ...';
+    }
+
+    function copyCmd() {
+      const argv = buildArgv();
+      const text = argv ? 'iperf3 ' + argv.join(' ') : 'iperf3';
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = old, 1200);
+      });
+    }
+
+    function pushLine(text, cls) {
+      if (!mounted) return;
+      const div = document.createElement('div');
+      div.className = 'l' + (cls ? ' ' + cls : '');
+      div.textContent = text;
+      $('console').appendChild(div);
+      $('console').scrollTop = $('console').scrollHeight;
+    }
+
+    function fmtRate(mbps) {
+      if (mbps >= 1000) return (mbps / 1000).toFixed(2) + ' Gbps';
+      if (mbps >= 1) return mbps.toFixed(2) + ' Mbps';
+      return (mbps * 1000).toFixed(0) + ' Kbps';
+    }
+    function fmtMB(mb) {
+      return mb >= 1000 ? (mb / 1000).toFixed(2) + ' GB' : mb.toFixed(1) + ' MB';
+    }
+
+    async function loadInfo() {
+      try {
+        const res = await fetch('/api/info');
+        const d = await res.json();
+        $('verInfo').textContent = d.version || d.iperf || 'iperf3';
+      } catch {
+        $('verInfo').textContent = 'iperf3 not found';
+      }
+    }
+
+    async function loadUser() {
+      try {
+        const res = await fetch('/api/info');
+        const d = await res.json();
+        if (d.user) {
+          $('userName').textContent = d.user;
+        }
+      } catch { /* ignore */ }
+    }
+
+    function logout() {
+      fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+        .then(() => { window.location.href = '/login'; })
+        .catch(() => { window.location.href = '/login'; });
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/iperf/results');
+        const d = await res.json();
+        const history = d.results || [];
+        if (history.length === 0) {
+          $('history').innerHTML = '<div class="empty">No history yet — completed runs appear here</div>';
+          return;
+        }
+        $('history').innerHTML = history.slice().reverse().map(r => `
+          <div class="item" onclick="selectHistory('${r.id}')">
+            <span class="t">${r.ts.replace('T', ' ')}</span>
+            <span class="m"><b>${(r.proto || '').toUpperCase()}</b> ${r.host || '(server)'} · ${r.duration}s · ${r.intervals.length} intervals</span>
+            <span class="rate">${fmtRate(r.avgMbps)}</span>
+          </div>
+        `).join('');
+      } catch { /* ignore */ }
+    }
+
+    function selectHistory(id) {
+      fetch('/api/iperf/results')
+        .then(r => r.json())
+        .then(d => {
+          const rec = (d.results || []).find(x => x.id === id);
+          if (!rec) return;
+          series = (rec.intervals || []).map(p => ({ x: p.t, y: p.mbps }));
+          stats = { cur: null, avg: rec.avgMbps, totalMB: rec.totalMB, dur: rec.duration };
+          drawChart();
+          pushLine(`History: ${(rec.proto || '').toUpperCase()} ${rec.host || ''} ${rec.ts}`, 'sys');
+        });
+    }
+
+    async function clearHistory() {
+      await fetch('/api/iperf/results', { method: 'DELETE' });
+      loadHistory();
+      pushLine('History cleared', 'sys');
+    }
+
+    function openStream(id) {
+      if (evtSource) evtSource.close();
+      closed = false;
+      currentId = id;
+      evtSource = new EventSource(`/api/stream/${id}`);
+      let summary = null;
+
+      evtSource.onmessage = (e) => {
+        let msg;
+        try { msg = JSON.parse(e.data); } catch { return; }
+        if (msg.type === 'line') {
+          pushLine(msg.text);
+        } else if (msg.type === 'data') {
+          if (mounted) {
+            series.push({ x: msg.t, y: msg.mbps });
+            stats.cur = msg.mbps;
+            drawChart();
+            updateStats();
+          }
+        } else if (msg.type === 'summary') {
+          summary = msg;
+          if (mounted) {
+            stats.avg = msg.mbps;
+            stats.totalMB = msg.totalMB;
+            stats.dur = msg.end;
+            updateStats();
+          }
+        } else if (msg.type === 'exit') {
+          pushLine(`— Done (exit code ${msg.code}) —`, msg.code === 0 ? 'exit-ok' : 'exit-err');
+          if (!mounted) return;
+          running = false;
+          $('btnRun').disabled = false;
+          $('btnStop').classList.add('hidden');
+          $('liveBadge').textContent = '';
+          $('statusDot').className = 'dot';
+          $('statusText').textContent = 'Ready';
+          evtSource.close();
+          evtSource = null;
+          closed = true;
+          loadHistory();
+        }
+      };
+      evtSource.onerror = () => {
+        if (closed) return;
+        evtSource.close();
+        evtSource = null;
+        closed = true;
+        if (!mounted) return;
+        running = false;
+        $('btnRun').disabled = false;
+        $('btnStop').classList.add('hidden');
+        $('statusDot').className = 'dot';
+        $('statusText').textContent = 'Ready';
+        loadHistory();
+      };
+    }
+
+    async function run() {
+      const argv = buildArgv();
+      if (!argv) {
+        pushLine('Please enter target host', 'exit-err');
+        return;
+      }
+      running = true;
+      series = [];
+      stats = { cur: null, avg: null, totalMB: null, dur: null };
+      drawChart();
+      updateStats();
+      $('btnRun').disabled = true;
+      $('btnStop').classList.remove('hidden');
+      $('liveBadge').textContent = 'live';
+      $('statusDot').className = 'dot run';
+      $('statusText').textContent = 'Running';
+      pushLine('$ iperf3 ' + argv.join(' '), 'sys');
+
+      try {
+        const res = await fetch('/api/iperf/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ argv }),
+        });
+        const data = await res.json();
+        if (!data.id) {
+          pushLine('Error: ' + (data.error || 'unknown'), 'exit-err');
+          running = false;
+          $('btnRun').disabled = false;
+          $('btnStop').classList.add('hidden');
+          return;
+        }
+        openStream(data.id);
+      } catch (e) {
+        pushLine('Connection failed: ' + e, 'exit-err');
+        running = false;
+        $('btnRun').disabled = false;
+        $('btnStop').classList.add('hidden');
+      }
+    }
+
+    async function stop() {
+      if (currentId) {
+        try {
+          await fetch('/api/iperf/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: currentId }),
+          });
+        } catch { /* ignore */ }
+      }
+      if (evtSource) { evtSource.close(); evtSource = null; }
+      closed = true;
+      currentId = null;
+      pushLine('■ Stopped by user', 'sys');
+      running = false;
+      $('btnRun').disabled = false;
+      $('btnStop').classList.add('hidden');
+      $('liveBadge').textContent = '';
+      $('statusDot').className = 'dot';
+      $('statusText').textContent = 'Ready';
+    }
+
+    function clearConsole() {
+      $('console').innerHTML = '';
+    }
+
+    function copyConsole() {
+      const text = Array.from($('console').querySelectorAll('.l')).map(l => l.textContent).join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = old, 1200);
+      });
+    }
+
+    // Chart drawing
+    function niceMax(v) {
+      if (!isFinite(v) || v <= 0) return 1;
+      const exp = Math.pow(10, Math.floor(Math.log10(v)));
+      const f = v / exp;
+      const nf = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+      return nf * exp;
+    }
+
+    function drawChart() {
+      const cv = $('chart');
+      if (!cv) return;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = cv.getBoundingClientRect();
+      const W = Math.max(rect.width, 220);
+      const H = Math.max(rect.height, 260);
+      cv.width = W * dpr;
+      cv.height = H * dpr;
+      const ctx = cv.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+
+      const pts = series;
+      ctx.font = '11px ui-monospace, Menlo, monospace';
+      ctx.textBaseline = 'middle';
+
+      const padL = 56, padR = 16, padT = 14, padB = 28;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      if (pts.length === 0) {
+        ctx.fillStyle = '#8b98a9';
+        ctx.textAlign = 'center';
+        ctx.fillText('No data — run a test to see chart', W / 2, H / 2);
+        return;
+      }
+
+      const maxY = niceMax(Math.max(...pts.map(p => p.y)));
+      const yTicks = 4;
+      ctx.textAlign = 'right';
+      for (let i = 0; i <= yTicks; i++) {
+        const val = (maxY * i) / yTicks;
+        const y = padT + plotH - (plotH * i) / yTicks;
+        ctx.strokeStyle = '#222c39';
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(W - padR, y);
+        ctx.stroke();
+        ctx.fillStyle = '#8b98a9';
+        let lbl = maxY >= 1000 ? (val / 1000).toFixed(1) + 'G' : val.toFixed(val < 10 ? 1 : 0) + 'M';
+        ctx.fillText(lbl, padL - 8, y);
+      }
+
+      const xs = pts.map(p => p.x);
+      let xmin = Math.min(...xs);
+      let xmax = Math.max(...xs);
+      if (xmax <= xmin) xmax = xmin + 1;
+      const xOf = (x) => padL + ((x - xmin) / (xmax - xmin)) * plotW;
+      const yOf = (v) => padT + plotH - (v / maxY) * plotH;
+
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 4; i++) {
+        const xv = xmin + ((xmax - xmin) * i) / 4;
+        const x = xOf(xv);
+        ctx.fillStyle = '#8b98a9';
+        ctx.fillText(xv.toFixed(1) + 's', x, H - padB + 14);
+      }
+
+      const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+      grad.addColorStop(0, 'rgba(62,166,255,0.35)');
+      grad.addColorStop(1, 'rgba(62,166,255,0.02)');
+      ctx.beginPath();
+      ctx.moveTo(xOf(xs[0]), yOf(pts[0].y));
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(xOf(xs[i]), yOf(pts[i].y));
+      ctx.lineTo(xOf(xs[xs.length - 1]), padT + plotH);
+      ctx.lineTo(xOf(xs[0]), padT + plotH);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(xOf(xs[0]), yOf(pts[0].y));
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(xOf(xs[i]), yOf(pts[i].y));
+      ctx.strokeStyle = '#3ea6ff';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      const lx = xOf(xs[xs.length - 1]);
+      const ly = yOf(pts[pts.length - 1].y);
+      ctx.beginPath();
+      ctx.arc(lx, ly, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#3ea6ff';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(lx, ly, 6, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(62,166,255,0.4)';
+      ctx.stroke();
+
+      ctx.fillStyle = '#e6edf3';
+      ctx.textAlign = 'right';
+      const cur = pts[pts.length - 1].y;
+      ctx.fillText(fmtRate(cur), W - padR, padT + 10);
+    }
+
+    function updateStats() {
+      $('statCur').textContent = stats.cur != null ? fmtRate(stats.cur) : '—';
+      $('statAvg').textContent = stats.avg != null ? fmtRate(stats.avg) : '—';
+      $('statTotal').textContent = stats.totalMB != null ? fmtMB(stats.totalMB) : '—';
+      $('statDur').textContent = stats.dur != null ? stats.dur + ' s' : '—';
+    }
+
+    // Resize observer for chart
+    const ro = new ResizeObserver(drawChart);
+    ro.observe($('chart'));
+
+    // Init
+    updatePresets();
+    syncUI();
+    updatePreview();
+    loadInfo();
+    loadHistory();
+
+    window.addEventListener('beforeunload', () => { mounted = false; });
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24">
+  <rect width="36" height="24" fill="#0b0f14"/>
+  <!-- ST connector - bayonet twist-lock -->
+  <rect x="6" y="4" width="24" height="16" rx="1.5" fill="#1a2531" stroke="#f08a5d" stroke-width="1.5"/>
+  <!-- Ceramic ferrule with spring -->
+  <circle cx="18" cy="12" r="4" fill="#e8e8e8" stroke="#999" stroke-width="0.5"/>
+  <circle cx="18" cy="12" r="1.5" fill="#2a2a2a"/>
+  <!-- Bayonet collar with slots -->
+  <g stroke="#f08a5d" stroke-width="2">
+    <line x1="14" y1="6" x2="14" y2="18"/>
+    <line x1="22" y1="6" x2="22" y2="18"/>
+  </g>
+  <!-- Spring indicator -->
+  <path d="M16 5 Q18 3 20 5 Q22 7 20 9 Q18 7 16 9 Q14 7 16 5" fill="none" stroke="#f08a5d" stroke-width="1.5"/>
+</svg>

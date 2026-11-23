@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>เอกสารระบบ_network-d.md</title>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+html,footer,header{
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Custom MD PDF CSS
+ */
+html,footer,header{
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+
+ }
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+<link rel="stylesheet" href="file:///Users/maaeyeng/network-d/R%3A%5C2.Travail%5C1.Enseignement%5CCours%5C_1.Outils%5C2.Developpement%5C1.SCSS%5Cmain.css" type="text/css"><link rel="stylesheet" href="file:///Users/maaeyeng/network-d/D%3A%5Crdaros%5CCours%5C_1.Outils%5C2.Developpement%5C1.SCSS%5Cmain.css" type="text/css">
+</head>
+
+<body>
+    <h1 id="%E0%B9%80%E0%B8%AD%E0%B8%81%E0%B8%AA%E0%B8%B2%E0%B8%A3%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%81%E0%B8%AD%E0%B8%9A%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A-network-d">เอกสารประกอบระบบ Network-D</h1>
+<h2 id="1-software-description--%E0%B8%8A%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%A3%E0%B8%B2%E0%B8%A2%E0%B8%A5%E0%B8%B0%E0%B9%80%E0%B8%AD%E0%B8%B5%E0%B8%A2%E0%B8%94%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A">1. Software Description | ชื่อและรายละเอียดระบบ</h2>
+<p><strong>ชื่อระบบ:</strong> Network-D (เครือข่ายดี)</p>
+<p><strong>คำอธิบายโดยย่อ:</strong><br>
+Network-D คือโปรแกรมจำลองสำหรับการศึกษาระบบเครือข่ายคอมพิวเตอร์และการสื่อสารข้อมูล รวมเว็บไซต์คอร์สเรียนบน Next.js เข้ากับแดชบอร์ด iPerf3/tcpdump ที่เขียนด้วย Python รองรับทั้งเนื้อหาบทเรียน การทดลองปฏิบัติ และเครื่องมือวัดประสิทธิภาพเครือข่ายแบบเรียลไทม์</p>
+<p><strong>คุณสมบัติหลัก:</strong></p>
+<ul>
+<li>คอร์สเรียนเครือข่าย 12 สัปดาห์ พร้อมสไลด์เต็มจอ การขีดเขียนทับภาพ และนำทางด้วยแป้นพิมพ์</li>
+<li>แดชบอร์ด iPerf3: สร้างคำสั่งทดสอบแบนด์วิดท์ (client &amp; server) ดูกราฟเรียลไทม์ผ่าน Server-Sent Events (SSE) และเก็บประวัติการทดสอบ</li>
+<li>แดชบอร์ด tcpdump: จับแพ็กเก็ต แสดงอัตราแพ็กเก็ตต่อวินาที (pps) และเก็บประวัติการจับ</li>
+<li>เครื่องมือเครือข่าย: ออกแบบโทโพโลยี traceroute เครื่องคำนวณซับเน็ต</li>
+<li>ห้องทดลองและการประเมินผล: แบบฝึกหัด คู่มือให้คะแนน แดชบอร์ดสำหรับผู้ดูแลระบบ</li>
+</ul>
+<p><strong>สแต็กเทคโนโลยี:</strong></p>
+<ul>
+<li>Frontend: Next.js 15 (App Router), React 19</li>
+<li>Backend Dashboard: Python 3 (stdlib only, ไม่ต้องพึ่งไลบรารีของบุคคลที่สาม)</li>
+<li>เครื่องมือภายนอก: iperf3, tcpdump/WinDump, scapy</li>
+<li>รันผ่าน Docker / Docker Compose หรือติดตั้งต้นทางบน macOS และ Windows</li>
+</ul>
+<p><strong>พอร์ตที่ใช้:</strong></p>
+<table>
+<thead>
+<tr>
+<th>พอร์ต</th>
+<th>บริการ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3000</td>
+<td>Next.js frontend (dev และ production)</td>
+</tr>
+<tr>
+<td>8765</td>
+<td>Python iPerf3/tcpdump dashboard</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="2-system-architecture--%E0%B8%AA%E0%B8%96%E0%B8%B2%E0%B8%9B%E0%B8%B1%E0%B8%95%E0%B8%A2%E0%B8%81%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A">2. System Architecture | สถาปัตยกรรมระบบ</h2>
+<p>ระบบประกอบด้วยสองส่วนหลักที่ทำงานอิสระต่อกัน:</p>
+<pre class="hljs"><code><div>+---------------------+                    +---------------------------+
+|   Next.js Frontend  |                    |   Python Dashboard        |
+|  (port 3000)        |                    |  (port 8765)              |
+|                     |                    |                           |
+|  - App Router pages |                    |  - ThreadingHTTPServer    |
+|  - React components |                    |  - REST API endpoints     |
+|  - Course data      |                    |  - Server-Sent Events (SSE)|
+|                     |                    |  - iperf3 / tcpdump runner|
++---------------------+                    +---------------------------+
+         |                                         |
+         +------------ HTTP fetch -----------------+
+                          (json API)
+</div></code></pre>
+<h3 id="21-python-dashboard-serverpy">2.1 Python Dashboard (<code>server.py</code>)</h3>
+<p>ใช้มอดูลมาตรฐานของ Python เท่านั้น (<code>http.server</code>, <code>threading</code>, <code>subprocess</code>, <code>queue</code>, ฯลฯ) ทำหน้าที่:</p>
+<ul>
+<li>รับคำสั่งจาก UI ผ่าน REST API (<code>/api/start</code>, <code>/api/stop</code>, <code>/api/results</code>, ฯลฯ)</li>
+<li>เปิดกระบวนการ <code>iperf3</code> หรือ <code>tcpdump</code> ย่อย และสตรีมเอาต์พุตกลับไปยังเบราว์เซอร์ผ่าน SSE</li>
+<li>แยกวิเคราะห์ข้อมูล throughput ต่อช่วงเวลาและส่งเป็นจุดข้อมูลสำหรับวาดกราฟเรียลไทม์</li>
+<li>บันทึกผลการทดสอบลงไฟล์ JSON (<code>results.json</code>, <code>tcpdump_results.json</code>) สูงสุด 100 รายการล่าสุด</li>
+<li>ระบบตรวจสอบสิทธิ์แบบง่าย (username/password แฮชด้วย SHA-256,	session cookie)</li>
+</ul>
+<h3 id="22-nextjs-frontend-app">2.2 Next.js Frontend (<code>app/</code>)</h3>
+<p>ใช้ Next.js 15 App Router จัดการหน้าเว็บทั้งหมด:</p>
+<ul>
+<li><code>app/page.js</code> — หน้าแรก แสดงบทเรียน หัวข้อปฏิบัติการ โครงงาน และผลลัพธ์ที่คาดหวัง (CLO)</li>
+<li><code>app/lessons/[n]/</code> — สไลด์บทเรียนแบบเต็มจอ พร้อมวาด/ขีดเขียนทับ</li>
+<li><code>app/iperf/</code> — หน้าทดสอบ iPerf3 พร้อมตัวสร้างคำสั่งและกราฟเรียลไทม์</li>
+<li><code>app/tcpdump/</code> — หน้าจับแพ็กเก็ต tcpdump</li>
+<li><code>app/scapy/</code>, <code>app/traceroute/</code>, <code>app/topology/</code>, <code>app/practical/</code>, <code>app/assessment/</code>, <code>app/admin/</code> — หน้าย่อยตามฟีเจอร์</li>
+<li><code>app/api/</code> — Route handler สำหรับข้อมูลคอร์สและระบบ</li>
+</ul>
+<h3 id="23-%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B9%84%E0%B8%94%E0%B9%80%E0%B8%A3%E0%B8%81%E0%B8%97%E0%B8%AD%E0%B8%A3%E0%B8%B5%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3">2.3 โครงสร้างไดเรกทอรีโครงการ</h3>
+<pre class="hljs"><code><div>network-d/
+├── app/                # Next.js 15 App Router (หน้าเว็บ, API routes)
+├── components/         # React คอมโพเนนต์ร่วม (แผนภูมิ, แถบนำทาง, ไอคอนอุปกรณ์)
+├── lib/                # ยูทิลิตี้ร่วมและข้อมูลคอร์ส (auth, course-data, topology)
+├── public/             # ทรัพยากร静止 (รูปภาพ)
+├── static/             # ไฟล์ static ของเซิร์ฟเวอร์ Python (index.html, login.html)
+├── server.py           # เซิร์ฟเวอร์แดชบอร์ด iPerf3/tcpdump (Python)
+├── Dockerfile          # อิมเมจ Docker สำหรับแดชบอร์ด Python
+├── docker-compose.yml  # กำหนดบริการ dashboard และ web
+├── package.json        # ตั้งค่าโครงการ Node.js
+├── start.sh / start.bat# สクリปต์เริ่มระบบ (macOS/Linux, Windows)
+└── results.json        # ไฟล์เก็บประวัติผลการทดสอบ (ตัวอย่าง)
+</div></code></pre>
+<hr>
+<h2 id="3-source-code--%E0%B8%95%E0%B8%B1%E0%B8%A7%E0%B8%AD%E0%B8%A2%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B8%AB%E0%B8%A3%E0%B8%B7%E0%B8%AD%E0%B8%AA%E0%B8%B3%E0%B9%80%E0%B8%99%E0%B8%B2%E0%B8%A3%E0%B8%AB%E0%B8%B1%E0%B8%AA%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%89%E0%B8%9A%E0%B8%B1%E0%B8%9A">3. Source Code | ตัวอย่างหรือสำเนารหัสต้นฉบับ</h2>
+<h3 id="31-%E0%B9%80%E0%B8%8B%E0%B8%B4%E0%B8%A3%E0%B9%8C%E0%B8%9F%E0%B9%80%E0%B8%A7%E0%B8%AD%E0%B8%A3%E0%B9%8C-python-serverpy--%E0%B8%88%E0%B8%B8%E0%B8%94%E0%B9%80%E0%B8%A3%E0%B8%B4%E0%B9%88%E0%B8%A1%E0%B8%95%E0%B9%89%E0%B8%99%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%9F%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B9%8C%E0%B8%8A%E0%B8%B1%E0%B8%99%E0%B8%AA%E0%B8%B3%E0%B8%84%E0%B8%B1%E0%B8%8D">3.1 เซิร์ฟเวอร์ Python (<code>server.py</code>) — จุดเริ่มต้นและฟังก์ชันสำคัญ</h3>
+<pre class="hljs"><code><div><span class="hljs-comment">#!/usr/bin/env python3</span>
+<span class="hljs-string">"""iPerf3 Dashboard - local web UI to build, run and graph iperf3 commands in realtime.
+
+Stdlib only. No third-party dependencies.
+"""</span>
+
+<span class="hljs-keyword">import</span> hashlib
+<span class="hljs-keyword">import</span> json
+<span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">import</span> queue
+<span class="hljs-keyword">import</span> re
+<span class="hljs-keyword">import</span> secrets
+<span class="hljs-keyword">import</span> shutil
+<span class="hljs-keyword">import</span> subprocess
+<span class="hljs-keyword">import</span> threading
+<span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">import</span> uuid
+<span class="hljs-keyword">from</span> datetime <span class="hljs-keyword">import</span> datetime, timedelta
+<span class="hljs-keyword">from</span> http.server <span class="hljs-keyword">import</span> BaseHTTPRequestHandler, ThreadingHTTPServer
+
+HOST = os.environ.get(<span class="hljs-string">"IPERF_HOST"</span>, <span class="hljs-string">"127.0.0.1"</span>)
+PORT = int(os.environ.get(<span class="hljs-string">"IPERF_PORT"</span>, <span class="hljs-string">"8765"</span>))
+IPERF_BIN = os.environ.get(<span class="hljs-string">"IPERF_BIN"</span>, <span class="hljs-string">"iperf3"</span>)
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), <span class="hljs-string">"static"</span>)
+RESULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), <span class="hljs-string">"results.json"</span>)
+MAX_RESULTS = <span class="hljs-number">100</span>
+
+AUTH_USER = os.environ.get(<span class="hljs-string">"AUTH_USER"</span>, <span class="hljs-string">"admin"</span>)
+AUTH_PASS_HASH = os.environ.get(<span class="hljs-string">"AUTH_PASS_HASH"</span>)
+<span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> AUTH_PASS_HASH:
+    default_pass = os.environ.get(<span class="hljs-string">"AUTH_PASS"</span>, <span class="hljs-string">"changeme"</span>)
+    AUTH_PASS_HASH = hashlib.sha256(default_pass.encode()).hexdigest()
+SESSION_TTL = int(os.environ.get(<span class="hljs-string">"SESSION_TTL"</span>, <span class="hljs-string">"86400"</span>))
+
+_sessions = {}
+_lock = threading.Lock()
+_results_lock = threading.Lock()
+_auth_sessions = {}
+_auth_lock = threading.Lock()
+</div></code></pre>
+<p>ฟังก์ชันเริ่มเซสชันการทดสอบ iPerf3 / tcpdump:</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">start_session</span><span class="hljs-params">(argv, mode=<span class="hljs-string">"iperf"</span>)</span>:</span>
+    <span class="hljs-string">"""Launch iperf3/tcpdump with argv (list, no shell) and return a session id."""</span>
+    binary = IPERF_BIN <span class="hljs-keyword">if</span> mode == <span class="hljs-string">"iperf"</span> <span class="hljs-keyword">else</span> TCPDUMP_BIN
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> shutil.which(binary) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> os.path.isabs(binary):
+        <span class="hljs-keyword">raise</span> FileNotFoundError(
+            <span class="hljs-string">f"'<span class="hljs-subst">{binary}</span>' not found. Install it or set the env var."</span>
+        )
+    _purge()
+    <span class="hljs-keyword">if</span> mode == <span class="hljs-string">"iperf"</span>:
+        argv = _ensure_interval(list(argv))
+    <span class="hljs-keyword">else</span>:
+        argv = _ensure_live_tcpdump(list(argv))
+    sid = uuid.uuid4().hex
+    q = queue.Queue()
+    proc = subprocess.Popen(
+        [binary] + argv,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=<span class="hljs-literal">True</span>,
+        bufsize=<span class="hljs-number">1</span>,
+    )
+    info = {<span class="hljs-string">"proc"</span>: proc, <span class="hljs-string">"queue"</span>: q}
+    <span class="hljs-keyword">with</span> _lock:
+        _sessions[sid] = info
+    <span class="hljs-comment"># ... อ่านเอาต์พุตแบบเรียลไทม์ ผ่านเธรด reader และส่งผ่าน SSE</span>
+    <span class="hljs-keyword">return</span> sid
+</div></code></pre>
+<p>จุดเริ่มต้นของเซิร์ฟเวอร์:</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>:</span>
+    ThreadingHTTPServer.allow_reuse_address = <span class="hljs-literal">True</span>
+    httpd = ThreadingHTTPServer((HOST, PORT), Handler)
+    print(<span class="hljs-string">f"iPerf3 Dashboard running at http://<span class="hljs-subst">{HOST}</span>:<span class="hljs-subst">{PORT}</span>"</span>)
+    <span class="hljs-keyword">try</span>:
+        httpd.serve_forever()
+    <span class="hljs-keyword">except</span> KeyboardInterrupt:
+        print(<span class="hljs-string">"\nShutting down..."</span>)
+        httpd.shutdown()
+
+<span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">"__main__"</span>:
+    main()
+</div></code></pre>
+<h3 id="32-%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B9%81%E0%B8%A3%E0%B8%81-nextjs-apppagejs">3.2 หน้าแรก Next.js (<code>app/page.js</code>)</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> Link <span class="hljs-keyword">from</span> <span class="hljs-string">"next/link"</span>;
+<span class="hljs-keyword">import</span> { COURSE, PROJECT, OUTCOMES, WEEKS, PRACTICALS } <span class="hljs-keyword">from</span> <span class="hljs-string">"@/lib/course-data"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Home</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"course"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"hero"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>{COURSE.titleTh}<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"sub"</span>&gt;</span>
+          {COURSE.title} — หลักสูตรปฏิบัติ {COURSE.weeks} สัปดาห์ ...
+        <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+      {/* แสดงบทเรียน หัวข้อปฏิบัติการ โครงงาน และ CLO */}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+  );
+}
+</div></code></pre>
+<h3 id="33-%E0%B8%84%E0%B8%AD%E0%B8%A1%E0%B9%82%E0%B8%9E%E0%B9%80%E0%B8%99%E0%B8%99%E0%B8%95%E0%B9%8C%E0%B8%81%E0%B8%A3%E0%B8%B2%E0%B8%9F%E0%B9%80%E0%B8%A3%E0%B8%B5%E0%B8%A2%E0%B8%A5%E0%B9%84%E0%B8%97%E0%B8%A1%E0%B9%8C-componentslinechartjs">3.3 คอมโพเนนต์กราฟเรียลไทม์ (<code>components/LineChart.js</code>)</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">LineChart</span>(<span class="hljs-params">{ data }</span>) </span>{
+  <span class="hljs-comment">// วาดกราฟเส้นแสดง throughput (bits/sec) ตามเวลาจริงจากข้อมูลที่ส่งมาผ่าน SSE</span>
+}
+</div></code></pre>
+<p>รหัสต้นฉบับฉบับสมบูรณ์อยู่ในไฟล์ <code>server.py</code> (633 บรรทัด) และไดเรกทอรี <code>app/</code> ของโครงการนี้</p>
+<hr>
+<h2 id="4-screenshot--%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%88%E0%B8%AD%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A">4. Screenshot | ภาพหน้าจอระบบ</h2>
+<p>เนื่องจากเป็นเอกสารตัวอักษร ไม่มีไฟล์ภาพจริงแนบมาด้วย สามารถถ่ายภาพหน้าจอได้ดังนี้เมื่อรันระบบ:</p>
+<table>
+<thead>
+<tr>
+<th>หน้าจอ</th>
+<th>คำอธิบาย</th>
+<th>วิธีถ่ายภาพ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>หน้าแรก (<code>http://localhost:3000</code>)</td>
+<td>แสดงสรุปคอร์ส บทเรียน และหัวข้อปฏิบัติการ</td>
+<td>เปิดเบราว์เซอร์ที่พอร์ต 3000 แล้วกด <code>PrtSc</code></td>
+</tr>
+<tr>
+<td>แดชบอร์ด iPerf3 (<code>http://localhost:8765</code>)</td>
+<td>ตัวสร้างคำสั่ง iperf3 พร้อมกราฟเรียลไทม์</td>
+<td>เปิดเบราว์เซอร์ที่พอร์ต 8765 login แล้วถ่ายภาพ</td>
+</tr>
+<tr>
+<td>หน้าจับแพ็กเก็ต tcpdump</td>
+<td>แสดงรายการอินเทอร์เฟซและอัตราแพ็กเก็ตต่อวินาที</td>
+<td>เข้าเมนู tcpdump ในแอปหลักแล้วถ่ายภาพ</td>
+</tr>
+<tr>
+<td>สไลด์บทเรียน</td>
+<td>สไลด์เต็มจอพร้อมเครื่องมือวาด/ขีดเขียน</td>
+<td>เข้า <code>/lessons/[n]</code> แล้วกด <code>F</code> สำหรับเต็มจอ</td>
+</tr>
+</tbody>
+</table>
+<p>แนะนำให้บันทึกภาพเป็นไฟล์ PNG/JPEG และวางไว้ในโฟลเดอร์ <code>docs/screenshots/</code> ต่อไป</p>
+<hr>
+<h2 id="5-user-interface--%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%88%E0%B8%AD%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%97%E0%B8%B3%E0%B8%87%E0%B8%B2%E0%B8%99">5. User Interface | หน้าจอและการทำงาน</h2>
+<h3 id="51-%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B9%81%E0%B8%A3%E0%B8%81-home">5.1 หน้าแรก (Home)</h3>
+<p>แสดงชื่อคอร์ส คำอธิบายหลักสูตร รายการบทเรียน 12 เรื่อง หัวข้อปฏิบัติการประกอบตารางเครื่องมือและผลลัพธ์ที่คาดหวัง และข้อมูลโครงงานบูรณาการ</p>
+<h3 id="52-%E0%B8%9A%E0%B8%97%E0%B9%80%E0%B8%A3%E0%B8%B5%E0%B8%A2%E0%B8%99-lessons">5.2 บทเรียน (Lessons)</h3>
+<ul>
+<li>แต่ละบทมีสไลด์หลายหน้า รองรับการนำทางด้วยแป้นพิมพ์ (<code>←</code>/<code>→</code>, <code>Space</code>, <code>Home</code>, <code>End</code>, <code>Esc</code>)</li>
+<li>กด <code>F</code> เพื่อสลับเต็มจอ กด <code>D</code> เพื่อสลับโหมดขีดเขียนทับภาพ</li>
+<li>มีตัวเลือกเล่นสไลด์อัตโนมัติทุก 5 วินาที</li>
+</ul>
+<h3 id="53-iperf3-dashboard">5.3 iPerf3 Dashboard</h3>
+<ul>
+<li>ผู้ใช้สร้างคำสั่ง iperf3 (client/server, TCP/UDP, ระยะเวลา, อินเทอร์วาล) ผ่านฟอร์มบนเว็บ</li>
+<li>กดเริ่มการทดสอบ ระบบจะสตรีมผลลัพธ์แบบเรียลไทม์ผ่าน SSE และวาดกราฟ bits/sec ตามเวลา</li>
+<li>เมื่อสิ้นสุดการทดสอบ ระบบจะบันทึกสถิติ (duration, total MB, avg Mbps) ลง <code>results.json</code></li>
+</ul>
+<h3 id="54-tcpdump-dashboard">5.4 tcpdump Dashboard</h3>
+<ul>
+<li>เลือกอินเทอร์เฟซเครือข่ายจากรายการที่ <code>tcpdump -D</code> คืนมา</li>
+<li>เริ่มจับแพ็กเก็ต แสดงจำนวนแพ็กเก็ตและอัตราต่อวินาที (pps) แบบเรียลไทม์</li>
+<li>บันทึกประวัติการจับลง <code>tcpdump_results.json</code></li>
+</ul>
+<h3 id="55-%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%AD%E0%B8%B7%E0%B9%88%E0%B8%99-%E0%B9%86">5.5 เครื่องมืออื่น ๆ</h3>
+<ul>
+<li><strong>Topology Designer:</strong> ออกแบบแผนผังเครือข่ายและเชื่อมต่ออุปกรณ์</li>
+<li><strong>Traceroute / Subnet Calculator:</strong> ตรวจสอบเส้นทางและคำนวณซับเน็ต</li>
+<li><strong>Scapy Runner:</strong> สร้างและส่งแพ็กเก็ตทดสอบด้วย Scapy</li>
+<li><strong>Practical &amp; Assessment:</strong> แบบฝึกหัดปฏิบัติและเกณฑ์การให้คะแนน</li>
+<li><strong>Admin:</strong> แดชบอร์ดสำหรับผู้ดูแลระบบจัดการผู้ใช้และข้อมูล</li>
+</ul>
+<h3 id="56-%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%95%E0%B8%A3%E0%B8%A7%E0%B8%88%E0%B8%AA%E0%B8%AD%E0%B8%9A%E0%B8%AA%E0%B8%B4%E0%B8%97%E0%B8%98%E0%B8%B4%E0%B9%8C">5.6 การตรวจสอบสิทธิ์</h3>
+<p>แดชบอร์ด Python (พอร์ต 8765) ต้อง login ก่อนใช้งาน เริ่มต้น username <code>admin</code> รหัสผ่าน <code>changeme</code> (แนะนำเปลี่ยนผ่านตัวแปรสภาพแวดล้อม <code>AUTH_USER</code> และ <code>AUTH_PASS</code>)</p>
+<hr>
+<h2 id="6-development-evidence--%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%81%E0%B8%90%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%9E%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%B2%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B9%80%E0%B8%A7%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B8%8A%E0%B8%B1%E0%B8%99">6. Development Evidence | หลักฐานการพัฒนาและประวัติเวอร์ชัน</h2>
+<h3 id="%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B9%80%E0%B8%81%E0%B9%87%E0%B8%9A%E0%B9%83%E0%B8%99-git-%E0%B9%80%E0%B8%A7%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B8%8A%E0%B8%B1%E0%B8%99%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%81">ประวัติการจัดเก็บใน Git (เวอร์ชันหลัก)</h3>
+<table>
+<thead>
+<tr>
+<th>เวอร์ชัน</th>
+<th>Commit</th>
+<th>รายละเอียด</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial</td>
+<td><code>459349d</code></td>
+<td>Initial commit</td>
+</tr>
+<tr>
+<td>V1.0 เริ่มโครงการ</td>
+<td><code>4cd9172</code></td>
+<td>start project V1.0</td>
+</tr>
+<tr>
+<td>ML pipeline / blog</td>
+<td><code>e3a7212</code></td>
+<td>EngineAI V1.0, ML pipeline, Next.js blog</td>
+</tr>
+<tr>
+<td>Data engineering platform</td>
+<td><code>cb6c54f</code></td>
+<td>add DataAir data engineering platform</td>
+</tr>
+<tr>
+<td>ปัจจุบัน</td>
+<td><code>17f9020</code></td>
+<td>chore: stop tracking data-engineering-platform (moved to its own repo)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%81%E0%B8%90%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%9E%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%B2">หลักฐานการพัฒนา</h3>
+<ul>
+<li><strong>ต้นทะเบียนโค้ด:</strong> ไฟล์ <code>server.py</code> (Python), <code>app/</code> (Next.js/React), <code>components/</code>, <code>lib/</code></li>
+<li><strong>สคริปต์ติดตั้ง:</strong> <code>install-macos.sh</code>, <code>install-windows.ps1</code>, <code>start.sh</code>, <code>start.bat</code></li>
+<li><strong>ไฟล์กำหนดค่าการสร้าง:</strong> <code>Dockerfile</code>, <code>docker-compose.yml</code>, <code>package.json</code></li>
+<li><strong>ไฟล์ผลลัพธ์ตัวอย่าง:</strong> <code>results.json</code>, <code>data/iperf_results.json</code>, <code>data/tcpdump_results.json</code>, <code>data/scapy_results.json</code></li>
+<li><strong>โลโก้ระบบ:</strong> <code>logo.svg</code></li>
+<li><strong>เอกสารคำแนะนำ:</strong> <code>README.md</code></li>
+</ul>
+<h3 id="%E0%B8%A7%E0%B8%B4%E0%B8%98%E0%B8%B5%E0%B8%95%E0%B8%A3%E0%B8%A7%E0%B8%88%E0%B8%AA%E0%B8%AD%E0%B8%9A%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%9E%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%B2">วิธีตรวจสอบประวัติการพัฒนา</h3>
+<pre class="hljs"><code><div><span class="hljs-built_in">cd</span> /Users/maaeyeng/network<span class="hljs-_">-d</span>
+git <span class="hljs-built_in">log</span> --oneline
+git show &lt;commit-id&gt;
+</div></code></pre>
+<hr>
+<h2 id="7-ownership-declaration--%E0%B8%84%E0%B8%B3%E0%B8%A3%E0%B8%B1%E0%B8%9A%E0%B8%A3%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%9B%E0%B9%87%E0%B8%99%E0%B9%80%E0%B8%88%E0%B9%89%E0%B8%B2%E0%B8%82%E0%B8%AD%E0%B8%87">7. Ownership Declaration | คำรับรองความเป็นเจ้าของ</h2>
+<p>ข้าพเจ้าในฐานะผู้พัฒนาระบบ Network-D ขอรับรองว่า</p>
+<ol>
+<li>
+<p>ระบบ Network-D ทั้งหมด รวมถึงรหัสต้นฉบับ (source code) เอกสารประกอบ รูปภาพ และทรัพย์สินดิจิทัลอื่น ๆ ที่อยู่ในโครงการนี้ เป็นผลงานที่ข้าพเจ้าพัฒนาขึ้นด้วยตนเอง หรือได้รับอนุญาตให้ใช้ภายใต้เงื่อนไขที่เหมาะสมแล้ว</p>
+</li>
+<li>
+<p>รหัสต้นฉบับในไฟล์ <code>server.py</code>, <code>app/</code>, <code>components/</code>, <code>lib/</code> และไฟล์อื่น ๆ ในโครงการนี้ ได้รับการเขียนและบำรุงรักษาโดยผู้พัฒนาระบบนี้</p>
+</li>
+<li>
+<p>เครื่องมือโอเพนซอร์สที่ใช้ภายในระบบ (เช่น Next.js, React, iperf3, tcpdump, scapy) เป็นทรัพย์สินของเจ้าของลิขสิทธิ์แต่ละราย และใช้ภายใต้สัญญาอนุญาตของแต่ละเครื่องมือ ไม่ได้อ้างความเป็นเจ้าของในส่วนดังกล่าว</p>
+</li>
+<li>
+<p>เอกสารฉบับนี้จัดทำขึ้นเพื่อเป็นหลักฐานประกอบระบบ Network-D และข้าพเจ้าเป็นเจ้าของลิขสิทธิ์ในเอกสารนี้รวมถึงเนื้อหาที่ข้าพเจ้าแต่งขึ้นทั้งหมด</p>
+</li>
+</ol>
+<hr>
+<p><strong>ผู้จัดทำเอกสาร:</strong> ผู้พัฒนาระบบ Network-D<br>
+<strong>วันที่จัดทำ:</strong> 23 พฤศจิกายน 2567 (2026-11-23)<br>
+<strong>เวอร์ชันเอกสาร:</strong> 1.0<br>
+<strong>ระบบ:</strong> Network-D</p>
+
+</body>
+
+</html>

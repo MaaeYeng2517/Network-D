@@ -1,0 +1,250 @@
+{
+  "name": "network-course-platform",
+  "displayName": "Network Course Platform",
+  "description": "Educational network lab platform with interactive lessons, topology designer, iPerf3, tcpdump, and more - all inside VS Code",
+  "version": "1.0.0",
+  "publisher": "maaeYeng",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Education",
+    "Other"
+  ],
+  "keywords": [
+    "network",
+    "education",
+    "course",
+    "iperf3",
+    "tcpdump",
+    "topology",
+    "cisco",
+    "networking"
+  ],
+  "icon": "icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MaaeYeng/network-d"
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:networkCourse.openDashboard",
+    "onCommand:networkCourse.openLessons",
+    "onCommand:networkCourse.openTopology",
+    "onCommand:networkCourse.openIperf3",
+    "onCommand:networkCourse.openTcpdump",
+    "onCommand:networkCourse.openScapy",
+    "onCommand:networkCourse.openTraceroute",
+    "onCommand:networkCourse.openPracticals",
+    "onCommand:networkCourse.openAssessment",
+    "onCommand:networkCourse.startServers",
+    "onCommand:networkCourse.stopServers",
+    "onCommand:networkCourse.showStatus"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "networkCourse.openDashboard",
+        "title": "Open Dashboard",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openLessons",
+        "title": "Open Lessons",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openTopology",
+        "title": "Open Topology Designer",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openIperf3",
+        "title": "Open iPerf3 Tool",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openTcpdump",
+        "title": "Open tcpdump Tool",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openScapy",
+        "title": "Open Scapy Tool",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openTraceroute",
+        "title": "Open Traceroute Tool",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openPracticals",
+        "title": "Open Practical Labs",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.openAssessment",
+        "title": "Open Assessment",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.startServers",
+        "title": "Start Servers",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.stopServers",
+        "title": "Stop Servers",
+        "category": "Network Course"
+      },
+      {
+        "command": "networkCourse.showStatus",
+        "title": "Show Server Status",
+        "category": "Network Course"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "networkCourse.openDashboard",
+          "when": "view == networkCourse.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "networkCourse.startServers",
+          "when": "view == networkCourse.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "networkCourse.stopServers",
+          "when": "view == networkCourse.explorer",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "networkCourse.openDashboard"
+        },
+        {
+          "command": "networkCourse.openLessons"
+        },
+        {
+          "command": "networkCourse.openTopology"
+        },
+        {
+          "command": "networkCourse.openIperf3"
+        },
+        {
+          "command": "networkCourse.openTcpdump"
+        },
+        {
+          "command": "networkCourse.openScapy"
+        },
+        {
+          "command": "networkCourse.openTraceroute"
+        },
+        {
+          "command": "networkCourse.openPracticals"
+        },
+        {
+          "command": "networkCourse.openAssessment"
+        },
+        {
+          "command": "networkCourse.startServers"
+        },
+        {
+          "command": "networkCourse.stopServers"
+        },
+        {
+          "command": "networkCourse.showStatus"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "networkCourse",
+          "title": "Network Course",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "networkCourse": [
+        {
+          "id": "networkCourse.explorer",
+          "name": "Course Explorer",
+          "type": "tree"
+        },
+        {
+          "id": "networkCourse.servers",
+          "name": "Server Status",
+          "type": "tree"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Network Course Platform",
+      "properties": {
+        "networkCourse.port": {
+          "type": "number",
+          "default": 3000,
+          "description": "Port for Next.js frontend"
+        },
+        "networkCourse.iperfPort": {
+          "type": "number",
+          "default": 8765,
+          "description": "Port for Python iPerf3 dashboard"
+        },
+        "networkCourse.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start servers on VS Code startup"
+        },
+        "networkCourse.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Path to Python executable"
+        },
+        "networkCourse.openBrowser": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open in external browser instead of VS Code webview"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "networkCourse.openDashboard",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "networkCourse.startServers",
+        "key": "ctrl+alt+s",
+        "mac": "cmd+alt+s",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "@vscode/vsce": "^2.15.0"
+  }
+}

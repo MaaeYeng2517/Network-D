@@ -1,0 +1,7 @@
+node_modules
+.next
+__pycache__
+*.pyc
+results.json
+data/*_results.json
+.git

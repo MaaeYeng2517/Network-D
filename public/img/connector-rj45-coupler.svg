@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24">
+  <rect width="36" height="24" fill="#0b0f14"/>
+  <!-- Two RJ-45 jacks back to back -->
+  <rect x="2" y="4" width="15" height="16" rx="1" fill="none" stroke="#3ea6ff" stroke-width="1.5"/>
+  <rect x="19" y="4" width="15" height="16" rx="1" fill="none" stroke="#3ea6ff" stroke-width="1.5"/>
+  <!-- Contacts on both sides -->
+  <g stroke="#ffd700" stroke-width="1">
+    <line x1="4" y1="5" x2="4" y2="21"/>
+    <line x1="6.8" y1="5" x2="6.8" y2="21"/>
+    <line x1="9.6" y1="5" x2="9.6" y2="21"/>
+    <line x1="12.4" y1="5" x2="12.4" y2="21"/>
+    <line x1="21" y1="5" x2="21" y2="21"/>
+    <line x1="23.8" y1="5" x2="23.8" y2="21"/>
+    <line x1="26.6" y1="5" x2="26.6" y2="21"/>
+    <line x1="29.4" y1="5" x2="29.4" y2="21"/>
+  </g>
+  <!-- Arrow between -->
+  <path d="M17 12 L19 12 M17 12 L18 10 M17 12 L18 14" fill="none" stroke="#e3b341" stroke-width="1.5"/>
+</svg>

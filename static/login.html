@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - iPerf3 Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #161d26; --panel2: #1d2632; --border: #2a3543;
+      --text: #e6edf3; --muted: #8b98a9; --accent: #fb923c; --accent2: #ea580c;
+      --ok: #3fb950; --warn: #d29922; --err: #f85149;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.5;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-wrap { width: 100%; max-width: 400px; padding: 20px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .card > .hd { padding: 16px 20px; border-bottom: 1px solid var(--border);
+      font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
+    .card .bd { padding: 24px 20px; }
+    .logo { width: 40px; height: 40px; display: block; }
+    .title { font-size: 18px; font-weight: 700; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    label.f { display: block; font-size: 12px; color: var(--muted); margin: 16px 0 6px; font-weight: 600; }
+    label.f:first-child { margin-top: 0; }
+    input { width: 100%; padding: 11px 13px; background: var(--panel2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 7px; font-size: 15px; outline: none; }
+    input:focus { border-color: var(--accent); }
+    .btn { border: none; border-radius: 7px; padding: 12px 16px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; }
+    .btn.primary { background: var(--accent); color: #04121f; }
+    .btn.primary:hover { background: var(--accent2); color: #fff; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .error { background: #3a1b1e; border: 1px solid #5a2a2e; color: #ff8f8f; border-radius: 6px; padding: 10px 12px; font-size: 13px; margin-top: 12px; display: none; }
+    .error.show { display: block; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="card">
+      <div class="hd">
+        <img src="logo.svg" class="logo" alt="logo">
+        <div>
+          <div class="title">iPerf3 Dashboard</div>
+          <div class="subtitle">แบบจำลองการเรียนรู้ระบบเครือข่ายคอมพิวเตอร์</div>
+          <div class="subtitle">Sign in to continue</div>
+        </div>
+      </div>
+      <div class="bd">
+        <form id="loginForm" autocomplete="on">
+          <label class="f" for="username">Username</label>
+          <input type="text" id="username" name="username" autocomplete="username" required />
+
+          <label class="f" for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required />
+
+          <button type="submit" class="btn primary" id="btnLogin">Sign In</button>
+        </form>
+        <div id="error" class="error"></div>
+        <div class="hint">Default: admin / changeme (set AUTH_USER / AUTH_PASS env to change)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const btn = document.getElementById('btnLogin');
+    const errEl = document.getElementById('error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+      errEl.classList.remove('show');
+      errEl.textContent = '';
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: form.username.value,
+            password: form.password.value,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = '/';
+        } else {
+          errEl.textContent = data.error || 'Login failed';
+          errEl.classList.add('show');
+        }
+      } catch (e) {
+        errEl.textContent = 'Connection error: ' + e.message;
+        errEl.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    });
+
+    // Auto-focus username
+    document.getElementById('username').focus();
+  </script>
+</body>
+</html>

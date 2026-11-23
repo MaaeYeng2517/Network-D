@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24">
+  <rect width="36" height="24" fill="#0b0f14"/>
+  <!-- SC connector - square push-pull -->
+  <rect x="6" y="4" width="24" height="16" rx="1.5" fill="#1a2531" stroke="#f08a5d" stroke-width="1.5"/>
+  <!-- Ceramic ferrule -->
+  <circle cx="18" cy="12" r="4" fill="#e8e8e8" stroke="#999" stroke-width="0.5"/>
+  <circle cx="18" cy="12" r="1.5" fill="#2a2a2a"/>
+  <!-- Push-pull tab -->
+  <rect x="5" y="8" width="3" height="8" rx="1" fill="#f08a5d"/>
+  <!-- Keying notch -->
+  <rect x="16" y="3" width="4" height="2" fill="#f08a5d"/>
+</svg>

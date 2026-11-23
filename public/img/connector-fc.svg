@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24">
+  <rect width="36" height="24" fill="#0b0f14"/>
+  <!-- FC connector - threaded screw-on -->
+  <rect x="6" y="4" width="24" height="16" rx="1.5" fill="#1a2531" stroke="#f08a5d" stroke-width="1.5"/>
+  <!-- Ceramic ferrule -->
+  <circle cx="18" cy="12" r="4" fill="#e8e8e8" stroke="#999" stroke-width="0.5"/>
+  <circle cx="18" cy="12" r="1.5" fill="#2a2a2a"/>
+  <!-- Threaded nut -->
+  <g stroke="#f08a5d" stroke-width="1.5">
+    <ellipse cx="18" cy="12" rx="7" ry="5" fill="none"/>
+    <ellipse cx="18" cy="12" rx="6" ry="4" fill="none"/>
+  </g>
+  <!-- Key notch -->
+  <rect x="16" y="3" width="4" height="2" fill="#f08a5d"/>
+</svg>
