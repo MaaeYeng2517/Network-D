@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-helpers";
+import { requireLicenseAdmin } from "@/lib/license-admin-auth";
 import { createLicenseKey, hashLicenseValue, licenseDb } from "@/lib/license";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function unauthorized(req) {
-  return requireAuth(req);
+  return requireLicenseAdmin(req);
 }
 
 export async function GET(req) {
