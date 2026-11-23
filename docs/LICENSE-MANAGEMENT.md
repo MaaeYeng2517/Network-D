@@ -1,40 +1,41 @@
 # Network-D License Management API
 
-This first implementation adds a license API to the existing Next.js 15 App Router project. It does not replace the current Next.js/Python application.
+This MVP adds license endpoints to the existing Next.js 15 App Router application.
 
-## Storage
+## Database setup
 
-The API uses Supabase Postgres through its REST endpoint. Run `database/license-schema.sql` in the Supabase SQL Editor.
+The API uses Supabase Postgres through its REST API. Run `database/license-schema.sql` in the Supabase SQL Editor.
 
-Set these server-only environment variables:
+Configure server-only environment variables:
 
-- `SUPABASE_URL`: project URL, for example `https://PROJECT.supabase.co`
-- `SUPABASE_SERVICE_ROLE_KEY`: service-role secret. Never expose it to browser code, commit it, or use a `NEXT_PUBLIC_` prefix.
+- `SUPABASE_URL`: Supabase project URL.
+- `SUPABASE_SERVICE_ROLE_KEY`: service-role secret. Never expose it to browser code or use a `NEXT_PUBLIC_` prefix.
+- `LICENSE_ADMIN_TOKEN`: long random secret (at least 32 random bytes), stored only in deployment secrets.
 
-## Endpoints
+## Customer API
 
-### Customer endpoints
+- `POST /api/license/activate`: `{ "license_key": "ND-...", "device_id": "stable-installation-id" }`; returns an activation token once.
+- `POST /api/license/validate`: `{ "activation_token": "...", "device_id": "stable-installation-id" }`.
+- `POST /api/license/deactivate`: same payload as validate.
 
-- `POST /api/license/activate` — JSON: `{ "license_key": "ND-...", "device_id": "stable-device-id" }`. Returns an activation token once.
-- `POST /api/license/validate` — JSON: `{ "activation_token": "...", "device_id": "stable-device-id" }`.
-- `POST /api/license/deactivate` — JSON: `{ "activation_token": "...", "device_id": "stable-device-id" }`.
+Use a stable random installation ID, not a MAC address or hardware serial. Store the activation token securely and never log it.
 
-The client must store the activation token securely and never log it. Use a stable random installation ID; do not use a MAC address or other hardware identifier.
+## Admin API
 
-### Admin endpoints
+All requests require `Authorization: Bearer <LICENSE_ADMIN_TOKEN>`.
 
-These endpoints currently reuse the project's existing cookie-based `requireAuth` helper:
+- `GET /api/license/admin`: list license metadata (never returns key hashes).
+- `POST /api/license/admin`: issue a license. Payload: `{ "customer_email": "buyer@example.com", "plan": "developer-monthly", "duration_days": 30, "max_activations": 1 }`. The plaintext key is returned once only.
+- `PATCH /api/license/admin`: update status. Payload: `{ "id": "license-uuid", "status": "active|suspended|revoked" }`.
 
-- `GET /api/license/admin` — list license metadata (never returns key hashes).
-- `POST /api/license/admin` — issue a license. JSON: `{ "customer_email": "buyer@example.com", "plan": "developer-monthly", "duration_days": 30, "max_activations": 1 }`. The plaintext key is returned once only.
-- `PATCH /api/license/admin` — set status. JSON: `{ "id": "license-uuid", "status": "active|suspended|revoked" }`.
+Do not embed the admin token in browser code or the distributed Docker image.
 
-## Important security and release notes
+## Production hardening still required
 
-1. Configure a strong unique `AUTH_PASS` and `AUTH_PASS_HASH`; the current repository's login/session implementation is not production-grade. Before selling, replace it with signed, server-side sessions, secure cookies, CSRF protection, login rate limits, and proper role checks. The current `requireAuth` only checks for the presence of a session cookie and must not be treated as hardened admin authentication.
-2. Supabase service-role key bypasses RLS. Keep it only in server runtime secrets.
-3. Run the SQL migration before calling endpoints. Without it, endpoints return service unavailable.
-4. License checks are online checks. Define a deliberate offline grace period before commercial release; do not fail open if the server is unreachable.
-5. License suspension/revocation blocks subsequent validation, but cannot erase a downloaded Docker image or stop a copied binary that has been modified to bypass checks.
-6. Admin API is a technical MVP, not yet a payment integration or Docker Hub Gated Distribution integration.
-7. Add rate limiting, audit logs, customer email verification, payment webhook verification, monitoring, backup/restore, and automated tests before production.
+1. This is an MVP single-admin credential, not a complete admin user/role system. Rotate the token and protect it as a production secret.
+2. The existing app login/session implementation is not production-grade; replace it with signed server-side sessions, secure cookies, CSRF protection, login rate limits, and roles before commercial release.
+3. Supabase service-role credentials bypass RLS and must remain server-side.
+4. Run the SQL migration before using the endpoints.
+5. Online validation currently fails closed when the license service is unavailable. Define and implement an explicit offline grace policy before release.
+6. Revocation blocks subsequent validation but cannot erase an image already downloaded or prevent a modified client from bypassing checks.
+7. Payment webhooks, Docker Hub distribution entitlements, rate limiting, audit logs, monitoring, backup/restore, and automated tests are not included yet.
