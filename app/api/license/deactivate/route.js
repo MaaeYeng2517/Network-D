@@ -1,0 +1,25 @@
+import { NextResponse } from "next/server";
+import { hashLicenseValue, getDeviceId, licenseDb } from "@/lib/license";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function POST(req) {
+  try {
+    const body = await req.json();
+    const token = typeof body.activation_token === "string" ? body.activation_token : "";
+    const deviceId = getDeviceId(body.device_id);
+    if (!token || !deviceId) {
+      return NextResponse.json({ success: false, error: "activation_token หรือ device_id ไม่ถูกต้อง" }, { status: 400 });
+    }
+    const response = await licenseDb("rpc/deactivate_network_d_license", {
+      method: "POST",
+      body: JSON.stringify({ p_token_hash: hashLicenseValue(token), p_device_id: deviceId }),
+    });
+    if (!response.ok) throw new Error("License database request failed");
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("License deactivation error:", error);
+    return NextResponse.json({ success: false, error: "License service unavailable" }, { status: 503 });
+  }
+}
