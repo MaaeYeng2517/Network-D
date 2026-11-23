@@ -31,7 +31,7 @@ export async function POST(req) {
     const plan = typeof body.plan === "string" ? body.plan.trim() : "developer-monthly";
     const days = Number(body.duration_days ?? 30);
     const maxActivations = Number(body.max_activations ?? 1);
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ success: false, error: "อีเมลลูกค้าไม่ถูกต้อง" }, { status: 400 });
     }
     if (!Number.isInteger(days) || days < 1 || days > 3660 || !Number.isInteger(maxActivations) || maxActivations < 1 || maxActivations > 100) {
