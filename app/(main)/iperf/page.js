@@ -53,6 +53,9 @@ export default function Page() {
   const [status, setStatus] = useState({ text: "พร้อมใช้งาน", kind: "" });
   const [history, setHistory] = useState([]);
   const [verInfo, setVerInfo] = useState("เชื่อมต่อ…");
+  const [showDetails, setShowDetails] = useState(false);
+  const [showNetwork, setShowNetwork] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
 
   const evtRef = useRef(null);
   const currentIdRef = useRef(null);
@@ -406,6 +409,57 @@ export default function Page() {
               คัดลอก
             </button>
           </div>
+
+          {/* Collapsible sections */}
+          <details className="details-section" open={showDetails} onToggle={(e) => setShowDetails(e.target.open)}>
+            <summary>🖼️ ภาพ / Visualization</summary>
+            <div className="details-content">
+              <p>กราฟความเร็วแบบเรียลไทม์แสดงบนแผงขวา (Real-time chart on right panel)</p>
+              <p>แสดงข้อมูล throughput ต่อช่วงเวลา (intervals) และสรุปผลรวม</p>
+            </div>
+          </details>
+
+          <details className="details-section" open={showDescription} onToggle={(e) => setShowDescription(e.target.open)}>
+            <summary>📝 คำอธิบาย / Description</summary>
+            <div className="details-content">
+              <p>หน้านี้ใช้สำหรับสร้างและรันคำสั่ง iPerf3 เพื่อวัดประสิทธิภาพเครือข่าย</p>
+              <ul>
+                <li><b>Client:</b> เริ่มการทดสอบเชื่อมต่อไปยัง Server เป้าหมาย</li>
+                <li><b>Server:</b> รอรับการเชื่อมต่อจาก Client</li>
+                <li><b>TCP:</b> โปรโตคอลเชื่อมต่อแบบน่าเชื่อถือ ใช้งานทั่วไป</li>
+                <li><b>UDP:</b> โปรโตคอลไม่ต้องการการเชื่อมต่อ วัด jitter/loss ได้</li>
+                <li><b>Reverse (-R):</b> ทดสอบดาวน์โหลด (Server ส่งข้อมูลมาที่ Client)</li>
+                <li><b>Bidir (--bidir):</b> ทดสอบ 2 ทิศทางพร้อมกัน</li>
+              </ul>
+            </div>
+          </details>
+
+          <details className="details-section" open={showNetwork} onToggle={(e) => setShowNetwork(e.target.open)}>
+            <summary>🌐 ตั้งค่าเครือข่าย / Network Settings (IPv4 / VLAN)</summary>
+            <div className="details-content">
+              <div className="row">
+                <div>
+                  <label className="f">IPv4 Address</label>
+                  <input type="text" placeholder="เช่น 192.168.1.10/24" readOnly />
+                </div>
+                <div>
+                  <label className="f">Gateway</label>
+                  <input type="text" placeholder="เช่น 192.168.1.1" readOnly />
+                </div>
+              </div>
+              <div className="row">
+                <div>
+                  <label className="f">VLAN ID</label>
+                  <input type="number" placeholder="เช่น 10" readOnly />
+                </div>
+                <div>
+                  <label className="f">Interface</label>
+                  <input type="text" placeholder="เช่น eth0.10" readOnly />
+                </div>
+              </div>
+              <div className="hint">* ค่าตั้งค่านี้แสดงข้อมูลอ้างอิงเท่านั้น (อ่านจากระบบจริงได้ผ่านคำสั่ง ip addr)</div>
+            </div>
+          </details>
 
           <div className="actions">
             <button className="btn primary" onClick={run} disabled={running}>▶ รันคำสั่ง</button>

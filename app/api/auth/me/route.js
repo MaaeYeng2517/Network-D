@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-const AUTH_USER = process.env.AUTH_USER || "admin";
-
 export async function GET(req) {
   const session = req.cookies.get("session");
   if (session?.value) {
-    return NextResponse.json({ authenticated: true, username: AUTH_USER });
+    const role = req.cookies.get("role")?.value || "admin";
+    const username = req.cookies.get("username")?.value || role;
+    return NextResponse.json({ authenticated: true, username, role });
   }
   return NextResponse.json({ authenticated: false });
 }

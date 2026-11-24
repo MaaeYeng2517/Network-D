@@ -1,7 +1,7 @@
-import "../globals.css";
+import "./globals.css";
 
 export const metadata = {
-  title: "Network-D สำหรับการเรียนรู้",
+  title: "เข้าสู่ระบบ - iPerf3 Dashboard",
 };
 
 export default function AuthLayout({ children }) {

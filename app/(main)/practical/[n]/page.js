@@ -642,7 +642,7 @@ const PRACTICAL_DETAILS = {
     description: "Nmap Scanning, UFW Firewall, ACL Configuration, Vulnerability Assessment",
     objectives: [
       "Nmap: Host Discovery, Port Scan (-sS, -sU), Service Version (-sV), Script (-sC)",
-      "解釋 Nmap Output: Open/Filtered/Closed, Service Info, OS Fingerprint",
+      "อธิบาย Nmap Output: Open/Filtered/Closed, Service Info, OS Fingerprint",
       "UFW: Default Policies, Allow/Deny Rules, Logging, Application Profiles",
       "Packet Tracer ACL: Standard/Extended, Inbound/Outbound, Reflexive, Time-based",
       "สร้าง Security Assessment Report: Findings, Risk Rating, Remediation"

@@ -85,6 +85,30 @@ function Shape({ type }) {
           <line x1="22" y1="19" x2="22" y2="26" {...S} />
         </g>
       );
+    case "gateway":
+      return (
+        <g>
+          <rect x="4" y="6" width="24" height="10" rx="2" {...S} />
+          <rect x="6" y="18" width="20" height="8" rx="2" {...S} />
+          <line x1="16" y1="16" x2="16" y2="7" {...S} />
+          <path d="M8 11h16 M16 7l4 4-4 4" {...S} opacity="0.8" />
+          <circle cx="8" cy="23" r="1.4" fill="currentColor" stroke="none" />
+          <circle cx="24" cy="23" r="1.4" fill="currentColor" stroke="none" />
+        </g>
+      );
+    case "service":
+      return (
+        <g>
+          <rect x="6" y="5" width="20" height="7" rx="1.5" {...S} />
+          <rect x="6" y="14" width="20" height="7" rx="1.5" {...S} />
+          <rect x="6" y="23" width="20" height="4" rx="1.5" {...S} />
+          <circle cx="11" cy="8.5" r="1" fill="currentColor" stroke="none" />
+          <circle cx="21" cy="8.5" r="1" fill="currentColor" stroke="none" />
+          <circle cx="11" cy="17.5" r="1" fill="currentColor" stroke="none" />
+          <circle cx="21" cy="17.5" r="1" fill="currentColor" stroke="none" />
+          <path d="M11 25.5h10" {...S} strokeWidth="2.2" />
+        </g>
+      );
     case "modem":
       return (
         <g>

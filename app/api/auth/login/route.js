@@ -28,19 +28,32 @@ export async function POST(req) {
   }
   const { username, password } = data;
   const validUsers = {
-    admin: process.env.AUTH_PASS || "changeme",
-    student: "student",
+    admin: { pass: process.env.AUTH_PASS || "changeme", role: "admin" },
+    student: { pass: "student", role: "student" },
   };
-  if (validUsers[username] && password === validUsers[username]) {
+  const entry = validUsers[username];
+  if (entry && password === entry.pass) {
     const token = createSession(username);
-    const res = NextResponse.json({ success: true, username });
+    const res = NextResponse.json({ success: true, username, role: entry.role });
     res.cookies.set("session", token, {
       httpOnly: true,
       sameSite: "lax",
       maxAge: 60 * 60 * 24,
       path: "/",
     });
+    res.cookies.set("role", entry.role, {
+      httpOnly: false,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24,
+      path: "/",
+    });
+    res.cookies.set("username", username, {
+      httpOnly: false,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24,
+      path: "/",
+    });
     return res;
   }
-  return NextResponse.json({ success: false, error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
+  return NextResponse.json({ success: false, error: "ชื่อผู้ใช้หรือ rhass ผ่านไม่ถูกต้อง" }, { status: 401 });
 }

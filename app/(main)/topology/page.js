@@ -108,6 +108,12 @@ export default function TopologyPage() {
   const [subnetOpen, setSubnetOpen] = useState(false);
   const [subnetIP, setSubnetIP] = useState("192.168.1.0");
   const [subnetMask, setSubnetMask] = useState("255.255.255.0");
+  const [simOpen, setSimOpen] = useState(false);
+  const [simOut, setSimOut] = useState("");
+  const [simSrc, setSimSrc] = useState("");
+  const [simDst, setSimDst] = useState("");
+  const [simMode, setSimMode] = useState("ping");
+  const [simCount, setSimCount] = useState(4);
   const [strokes, setStrokes] = useState([]);
   const [texts, setTexts] = useState([]);
   const [penColor, setPenColor] = useState("#e3b341");
@@ -339,6 +345,10 @@ export default function TopologyPage() {
     setPending(null);
   };
 
+  const updateNode = (id, patch) => {
+    setNodes((ns) => ns.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+  };
+
   const deleteLink = (id) => {
     setLinks((ls) => ls.filter((l) => l.id !== id));
     setSel(null);
@@ -479,6 +489,16 @@ const deleteSelection = () => {
     e.target.value = '';
   };
 
+  const openSimModal = () => {
+    if (!nodes.length) { setSimOut("เพิ่มอุปกรณ์ก่อนเปิดหน้าต่างจำลอง"); return; }
+    setSimSrc(nodes[0].id);
+    setSimDst(nodes[nodes.length - 1].id);
+    setSimMode("ping");
+    setSimCount(4);
+    setSimOut("");
+    setSimOpen(true);
+  };
+
   const clearAll = () => {
     setNodes([]);
     setLinks([]);
@@ -486,6 +506,26 @@ const deleteSelection = () => {
     setTexts([]);
     setSel(null);
     setPending(null);
+  };
+
+  const runSim = async () => {
+    if (!simSrc || !simDst) { setSimOut("เลือกต้นทางและปลายทาง"); return; }
+    const topo = {
+      nodes: nodes.map((n) => ({ id: n.id, name: DEVICE_MAP[n.type]?.name || n.type, layer: DEVICE_MAP[n.type]?.layer || 1 })),
+      links: links.map((l) => ({ a: l.a, b: l.b, cable: l.cable })),
+    };
+    setSimOut(`> network-d sim ${simMode} ${simSrc} -> ${simDst}\n[กำลังเรียก virtual network engine...]\n`);
+    try {
+      const res = await fetch("/api/topology/sim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topo, mode: simMode, src: simSrc, dst: simDst, count: simCount }),
+      });
+      const data = await res.json();
+      setSimOut(data.output || data.error || "(no output)");
+    } catch (e) {
+      setSimOut("error: " + e.message);
+    }
   };
 
   const nodeCenter = (n) => ({ x: n.x + NODE_W / 2, y: n.y + 40 });
@@ -553,6 +593,12 @@ const deleteSelection = () => {
             <div className="pt-subnet" style={{position: "relative"}}>
               <button className="btn" onClick={() => setSubnetOpen(!subnetOpen)} title="คำนวณ IP Subnet">
                 🧮 Subnet
+              </button>
+              <button className="btn" onClick={runSim} title="รันการจำลองเครือข่าย: ping / traceroute">
+                🧪 รันจำลอง
+              </button>
+              <button className="btn" onClick={openSimModal} title="เปิดหน้าต่างจำลองเครือข่าย">
+                🖥️ จำลองเครือข่าย
               </button>
               {subnetOpen && (
                 <div className="pt-subnet-popover">
@@ -1463,13 +1509,62 @@ const deleteSelection = () => {
         )}
       </div>
 
-      <p className="pt-credit">
+<p className="pt-credit">
         รูปภาพประกอบอุปกรณ์และสายสัญญาณจาก{" "}
         <a href="https://commons.wikimedia.org" target="_blank" rel="noreferrer">
           Wikimedia Commons
         </a>{" "}
-        (สงวนลิขสิทธิ์ตามเงื่อนไขของแต่ละภาพ)
+        ( Reserved under the license of each image)
       </p>
+
+      {simOpen && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+          onClick={() => setSimOpen(false)}
+        >
+          <div
+            className="card"
+            style={{ width: "min(760px, 96vw)", maxHeight: "90vh", overflow: "auto", background: "var(--panel)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="hd" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span> virtual network simulation</span>
+              <button className="pt-collapse" onClick={() => setSimOpen(false)} title="ปิด">✕</button>
+            </div>
+            <div className="bd" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <label className="f">โหมด</label>
+                <div className="seg" style={{ width: "100%" }}>
+                  <button className={simMode === "ping" ? "active" : ""} onClick={() => setSimMode("ping")}>Ping</button>
+                  <button className={simMode === "traceroute" ? "active" : ""} onClick={() => setSimMode("traceroute")}>Traceroute</button>
+                </div>
+                <label className="f">ต้นทาง (Source)</label>
+                <select value={simSrc} onChange={(e) => setSimSrc(e.target.value)} style={{ width: "100%" }}>
+                  {nodes.map((n) => (
+                    <option key={n.id} value={n.id}>{DEVICE_MAP[n.type]?.name || n.type} [{n.id}]</option>
+                  ))}
+                </select>
+                <label className="f">ปลายทาง (Destination)</label>
+                <select value={simDst} onChange={(e) => setSimDst(e.target.value)} style={{ width: "100%" }}>
+                  {nodes.map((n) => (
+                    <option key={n.id} value={n.id}>{DEVICE_MAP[n.type]?.name || n.type} [{n.id}]</option>
+                  ))}
+                </select>
+                <label className="f">จำนวน {simMode === "ping" ? " ICMP" : " hops"}</label>
+                <input type="number" min="1" max="20" value={simCount} onChange={(e) => setSimCount(Number(e.target.value) || 4)} style={{ width: "100%" }} />
+                <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
+                  <button className="btn primary" onClick={runSim}>รันจำลอง</button>
+                  <button className="btn" onClick={() => setSimOut("")}>ล้างผลลัพธ์</button>
+                </div>
+              </div>
+              <div>
+                <label className="f">ผลลัพธ์</label>
+                <pre className="console" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", minHeight: 280, background: "#0b0f14" }}>{simOut || "คลิก รันจำลอง เพื่อเรียกใช้ virtual network engine"}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

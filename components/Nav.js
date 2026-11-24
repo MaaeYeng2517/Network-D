@@ -5,17 +5,25 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 
-const LINKS = [
+const ALL_LINKS = [
   { href: "/", label: "หน้าแรก", match: (p) => p === "/" },
   { href: "/lessons", label: "บทเรียน", match: (p) => p.startsWith("/lessons") },
   { href: "/practical", label: "ปฏิบัติการ", match: (p) => p.startsWith("/practical") },
-  { href: "/assessment", label: "การประเมิน", match: (p) => p.startsWith("/assessment") },
-  { href: "/topology", label: "ออกแบบเครือข่าย", match: (p) => p.startsWith("/topology") },
+  { href: "/assessment", label: "การเวลา", match: (p) => p.startsWith("/assessment") },
+  { href: "/topology", label: " designing ", match: (p) => p.startsWith("/topology") },
+  { href: "/devices", label: "อุปกรณ์เสมือน 3D", match: (p) => p.startsWith("/devices") },
   { href: "/iperf", label: "iPerf3 Dashboard", match: (p) => p.startsWith("/iperf") },
   { href: "/tcpdump", label: "tcpdump", match: (p) => p.startsWith("/tcpdump") },
   { href: "/tshark", label: "tshark", match: (p) => p.startsWith("/tshark") },
   { href: "/traceroute", label: "Traceroute", match: (p) => p.startsWith("/traceroute") },
   { href: "/scapy", label: "Scapy", match: (p) => p.startsWith("/scapy") },
+  { href: "/scanport", label: "Scan Port", match: (p) => p.startsWith("/scanport") },
+  { href: "/admin", label: "จัดการ", match: (p) => p.startsWith("/admin") },
+];
+
+// Pages that student role is allowed to access
+const STUDENT_ALLOWED_PATHS = [
+  "/", "/topology", "/devices", "/iperf", "/tcpdump", "/tshark", "/traceroute", "/scapy",
 ];
 
 export default function Nav() {
@@ -23,6 +31,14 @@ export default function Nav() {
   const [open, setOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+
+  const isStudent = user?.role === "student";
+  const links = ALL_LINKS.filter((l) => {
+    if (isStudent) {
+      return STUDENT_ALLOWED_PATHS.some((allowed) => l.href.startsWith(allowed));
+    }
+    return true;
+  });
 
   async function handleLogout() {
     await logout();
@@ -35,7 +51,7 @@ export default function Nav() {
         {open ? "✕" : "☰"}
       </button>
       <div className={`nav-links${open ? " open" : ""}`}>
-        {LINKS.map((l) => (
+        {links.map((l) => (
           <Link key={l.href} className={l.match(p) ? "active" : ""} href={l.href} onClick={() => setOpen(false)}>
             {l.label}
           </Link>
@@ -50,6 +66,7 @@ export default function Nav() {
           </button>
           {userMenuOpen && (
             <div className="user-dropdown">
+              <span className="dropdown-role">{user.role === "admin" ? "ผู้ดูแล" : "ผู้เรียน"}</span>
               <button className="dropdown-item" onClick={handleLogout}>ออกจากระบบ</button>
             </div>
           )}

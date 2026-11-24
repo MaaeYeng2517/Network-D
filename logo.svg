@@ -7,9 +7,9 @@
     <line x1="196" y1="60" x2="196" y2="196"/>
     <line x1="60" y1="60" x2="196" y2="196"/>
     <line x1="60" y1="196" x2="196" y2="60"/>
-    <circle cx="60" cy="60" r="20" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
-    <circle cx="60" cy="196" r="20" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
-    <circle cx="196" cy="60" r="20" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
-    <circle cx="196" cy="196" r="20" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
+    <circle cx="60" cy="60" r="40" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
+    <circle cx="60" cy="196" r="40" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
+    <circle cx="196" cy="60" r="40" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
+    <circle cx="196" cy="196" r="40" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
   </g>
 </svg>

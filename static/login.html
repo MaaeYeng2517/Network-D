@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - iPerf3 Dashboard</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <style>
     :root {
       --bg: #0f1419; --panel: #161d26; --panel2: #1d2632; --border: #2a3543;
@@ -77,14 +79,14 @@
       errEl.textContent = '';
 
       try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: form.username.value,
-            password: form.password.value,
-          }),
-        });
+const res = await fetch('/api/login', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             username: form.username.value,
+             password: form.password.value,
+           }),
+         });
         const data = await res.json();
         if (data.success) {
           window.location.href = '/';

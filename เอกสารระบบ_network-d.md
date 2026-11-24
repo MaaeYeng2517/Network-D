@@ -70,7 +70,7 @@ network-d/
 ├── app/                # Next.js 15 App Router (หน้าเว็บ, API routes)
 ├── components/         # React คอมโพเนนต์ร่วม (แผนภูมิ, แถบนำทาง, ไอคอนอุปกรณ์)
 ├── lib/                # ยูทิลิตี้ร่วมและข้อมูลคอร์ส (auth, course-data, topology)
-├── public/             # ทรัพยากร静止 (รูปภาพ)
+├── public/             # ทรัพยากร (รูปภาพ)
 ├── static/             # ไฟล์ static ของเซิร์ฟเวอร์ Python (index.html, login.html)
 ├── server.py           # เซิร์ฟเวอร์แดชบอร์ด iPerf3/tcpdump (Python)
 ├── Dockerfile          # อิมเมจ Docker สำหรับแดชบอร์ด Python
@@ -323,7 +323,7 @@ git show <commit-id>
 | Server | L1–L7 | ผู้ให้บริการ | Web, DNS, DHCP, File, Database, Email มี IP คงที่ (Static) |
 | Switch | L2 (หรือ L3) | เชื่อมโครงข่ายท้องถิ่น | ส่ง Frame ตาม MAC Address รองรับ VLAN, STP, Link Aggregation |
 | Router | L3 | รัวต์ต่อระหว่างเครือข่าย | ส่งแพ็กเก็ตตาม IP Address ทำหน้าที่ Default Gateway และ NAT |
-| Hub | L1 | กระจายสัญญาณ Broadcast | ส่งออกทุกพอร์ต 半 duplex ถูกสวิตช์แทนที่ในงานสมัยใหม่ |
+| Hub | L1 | กระจายสัญญาณ Broadcast | ส่งออกทุกพอร์ต half duplex ถูกสวิตช์แทนที่ในงานสมัยใหม่ |
 | Access Point | L2 | เชื่อมอุปกรณ์ Wi-Fi | ใช้ CSMA/CA กำหนด SSID WPA2/WPA3 รองรับ roaming |
 | Firewall | L3–L7 | ตัวกรองความปลอดภัย | ตรวจกรองทราฟฟิกตาม ACL บันทึก Log |
 | Modem | L1 | แปลงดิจิทัล–อนาล็อก | เชื่อมต่อ LAN กับ ISP |

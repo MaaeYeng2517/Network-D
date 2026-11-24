@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Realistic 3D Network Router - Three.js</title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #0b0e14; font-family: sans-serif; }
+    #info {
+      position: absolute; top: 16px; left: 16px; color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.75); padding: 12px 16px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1); pointer-events: none; font-size: 14px;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com",
+        "three/addons/": "https://unpkg.com"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="info">
+    <strong>3D Network Router (Realistic PBR)</strong><br/>
+    ลากเมาส์เพื่อหมุน 360° | เลื่อนลูกกลิ้งเพื่อซูมดูพอร์ตด้านหน้า/หลัง
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+    // 1. ตั้งค่า Scene, Camera, Renderer
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b0e14);
+
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(4.5, 3.2, 5.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    // 2. สภาพแวดล้อมสะท้อนแสง (HDRI Studio จำลอง)
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    // 3. สร้าง Procedural Micro-Grain Texture (ผิวพลาสติกสากละเอียดสมจริง)
+    function createPlasticGrainTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256; canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(256, 256);
+      for (let i = 0; i < imgData.data.length; i += 4) {
+        const val = 140 + Math.random() * 45; // ค่าความหยาบสุ่มละเอียด
+        imgData.data[i] = val;
+        imgData.data[i + 1] = val;
+        imgData.data[i + 2] = val;
+        imgData.data[i + 3] = 255;
+      }
+      ctx.putImageData(imgData, 0, 0);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(8, 8);
+      return tex;
+    }
+    const grainMap = createPlasticGrainTexture();
+
+    // 4. วัสดุ PBR (Materials)
+    const bodyMat = new THREE.MeshPhysicalMaterial({
+      color: 0x1e2229,
+      roughness: 0.65,
+      roughnessMap: grainMap,
+      metalness: 0.15,
+      clearcoat: 0.15,
+      clearcoatRoughness: 0.4
+    });
+
+    const glossyTrimMat = new THREE.MeshPhysicalMaterial({
+      color: 0x111317,
+      roughness: 0.15,
+      metalness: 0.2,
+      clearcoat: 0.9
+    });
+
+    const seamMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.9 });
+    const metalPortMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.9, roughness: 0.25 });
+    const wanBlueMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.4, metalness: 0.2 });
+    const goldPinMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 1.0, roughness: 0.2 });
+    const antennaMat = new THREE.MeshStandardMaterial({ color: 0x232730, roughness: 0.55, roughnessMap: grainMap, metalness: 0.25 });
+
+    const ledCyanMat = new THREE.MeshStandardMaterial({
+      color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 3.0, toneMapped: false
+    });
+    const ledGreenMat = new THREE.MeshStandardMaterial({
+      color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 3.0, toneMapped: false
+    });
+
+    // 5. ประกอบตัวเครื่อง Router
+    const routerGroup = new THREE.Group();
+    scene.add(routerGroup);
+
+    // 5.1 ฝาล่าง + ร่องรอยต่อ + ฝาบน (สร้างมิติชิ้นส่วนประกอบ)
+    const bottomShell = new THREE.Mesh(new RoundedBoxGeometry(4.4, 0.28, 2.8, 4, 0.06), bodyMat);
+    bottomShell.position.y = 0.2;
+    bottomShell.castShadow = true;
+    routerGroup.add(bottomShell);
+
+    const seamLine = new THREE.Mesh(new THREE.BoxGeometry(4.32, 0.05, 2.72), seamMat);
+    seamLine.position.y = 0.35;
+    routerGroup.add(seamLine);
+
+    const topShell = new THREE.Mesh(new RoundedBoxGeometry(4.4, 0.3, 2.8, 4, 0.07), bodyMat);
+    topShell.position.y = 0.5;
+    topShell.castShadow = true;
+    routerGroup.add(topShell);
+
+    // แถบคาดเงาด้านบน & ขาตั้งยาง 4 มุม
+    const topAccent = new THREE.Mesh(new THREE.BoxGeometry(4.41, 0.02, 0.35), glossyTrimMat);
+    topAccent.position.set(0, 0.651, 0.6);
+    routerGroup.add(topAccent);
+
+    const footPositions = [[-1.8, -1.1], [1.8, -1.1], [-1.8, 1.1], [1.8, 1.1]];
+    footPositions.forEach(([fx, fz]) => {
+      const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.16, 0.06, 16), seamMat);
+      foot.position.set(fx, 0.03, fz);
+      routerGroup.add(foot);
+    });
+
+    // 5.2 ด้านหน้า (Front Panel): แถบหน้าปัดเงา + ไฟสถานะ LED 6 ดวง
+    const frontFace = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.16, 0.02), glossyTrimMat);
+    frontFace.position.set(0, 0.48, 1.402);
+    routerGroup.add(frontFace);
+
+    const ledMeshes = [];
+    for (let i = 0; i < 6; i++) {
+      const mat = i === 0 ? ledGreenMat : ledCyanMat; // ดวงแรกเป็น Power สีเขียว ที่เหลือสีฟ้า
+      const led = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.035, 0.01), mat.clone());
+      led.position.set(-1.2 + i * 0.48, 0.48, 1.413);
+      routerGroup.add(led);
+      ledMeshes.push(led);
+    }
+
+    // 5.3 ด้านหลัง (Rear Panel): พอร์ต WAN (สีน้ำเงิน) + พอร์ต LAN 4 ช่อง (โลหะ) + ช่องไฟ DC + ปุ่ม Reset
+    function createRJ45Port(x, isWan = false) {
+      const portGroup = new THREE.Group();
+      portGroup.position.set(x, 0.45, -1.4);
+
+      // กรอบพอร์ต (WAN สีน้ำเงิน / LAN โลหะ)
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.26, 0.06), isWan ? wanBlueMat : metalPortMat);
+      portGroup.add(frame);
+
+      // รูด้านในสีดำ
+      const hole = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.065), seamMat);
+      hole.position.z = -0.005;
+      portGroup.add(hole);
+
+      // ซี่ทองแดง 8 เส้นด้านใน
+      for (let p = 0; p < 8; p++) {
+        const pin = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.06, 0.02), goldPinMat);
+        pin.position.set(-0.085 + p * 0.024, 0.05, -0.01);
+        portGroup.add(pin);
+      }
+      routerGroup.add(portGroup);
+    }
+
+    // สร้างพอร์ต 1 WAN + 4 LAN
+    createRJ45Port(-1.1, true);  // WAN
+    createRJ45Port(-0.65, false); // LAN 1
+    createRJ45Port(-0.25, false); // LAN 2
+    createRJ45Port(0.15, false);  // LAN 3
+    createRJ45Port(0.55, false);  // LAN 4
+
+    // ช่องเสียบไฟเลี้ยง DC Power Jack
+    const dcRing = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 20), seamMat);
+    dcRing.rotation.x = Math.PI / 2;
+    dcRing.position.set(1.2, 0.45, -1.4);
+    routerGroup.add(dcRing);
+
+    const dcPin = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.07, 12), metalPortMat);
+    dcPin.rotation.x = Math.PI / 2;
+    dcPin.position.set(1.2, 0.45, -1.4);
+    routerGroup.add(dcPin);
+
+    // ปุ่ม Power / WPS
+    const powerBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.08, 20), antennaMat);
+    powerBtn.rotation.x = Math.PI / 2;
+    powerBtn.position.set(1.6, 0.45, -1.4);
+    routerGroup.add(powerBtn);
+
+    // 5.4 เสาอากาศ 4 ต้น (พร้อมข้อต่อหมุน)
+    const antennaX = [-1.7, -0.6, 0.6, 1.7];
+    antennaX.forEach((ax, idx) => {
+      const antGroup = new THREE.Group();
+      antGroup.position.set(ax, 0.48, -1.42);
+
+      // ข้อต่อฐานเสา (Hinge)
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.22, 16), antennaMat);
+      base.rotation.z = Math.PI / 2;
+      antGroup.add(base);
+
+      // ก้านเสาอากาศเรียวแบน
+      const blade = new THREE.Mesh(new RoundedBoxGeometry(0.14, 2.2, 0.06, 2, 0.02), antennaMat);
+      blade.position.y = 1.1;
+      antGroup.add(blade);
+
+      // เอียงเสาเล็กน้อยให้ดูเป็นธรรมชาติ
+      antGroup.rotation.x = -0.15;
+      antGroup.rotation.z = (idx - 1.5) * 0.08;
+      routerGroup.add(antGroup);
+    });
+
+    // 6. พื้นรับเงา (Studio Floor)
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0x0f131a, roughness: 0.85, metalness: 0.1 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // แสงหลัก + Rim Light
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    dirLight.position.set(5, 8, 6);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(1024, 1024);
+    scene.add(dirLight);
+
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+    rimLight.position.set(-5, 4, -6);
+    scene.add(rimLight);
+
+    // 7. Post-Processing (UnrealBloomPass สำหรับแสงไฟ LED)
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.6,  // ความฟุ้ง (Strength)
+      0.4,  // รัศมีแสง (Radius)
+      0.85  // Threshold (เฉพาะวัตถุที่สว่างเกิน 0.85 เท่านั้นที่จะเรืองแสง)
+);
+composer.addPass(bloomPass);
+// 8. Controls & Animation Loop (ไฟสถานะกระพริบส่งข้อมูล)
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0.5, 0);
+window.addEventListener('resize', () => {
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, window.innerHeight);
+composer.setSize(window.innerWidth, window.innerHeight);
+});
+const clock = new THREE.Clock();
+function animate() {
+requestAnimationFrame(animate);
+const t = clock.getElapsedTime();
+// จำลองไฟ LAN / Internet กระพริบตามจังหวะรับ-ส่งข้อมูล
+ledMeshes.forEach((led, idx) => {
+if (idx > 0) {
+const blink = Math.sin(t * (8 + idx * 3)) > 0 ? 3.2 : 0.4;
+led.material.emissiveIntensity = blink;
+}
+});
+controls.update();
+composer.render();
+}
+animate();
+

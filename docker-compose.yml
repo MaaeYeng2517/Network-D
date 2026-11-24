@@ -8,7 +8,6 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    network_mode: host
     restart: unless-stopped
 
   web:

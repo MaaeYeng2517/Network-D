@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Network Switch (Rack 1U) — Three.js</title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #0b0f19; font-family: sans-serif; }
+    #info {
+      position: absolute; top: 16px; left: 16px; color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.75); padding: 12px 16px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1); pointer-events: none; font-size: 14px;
+      line-height: 1.5; backdrop-filter: blur(6px);
+    }
+    #info b { color: #00f0ff; }
+    #legend { margin-top: 8px; display: flex; gap: 12px; font-size: 12px; }
+    #legend span { display: inline-flex; align-items: center; gap: 5px; }
+    #legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.187.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.187.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="info">
+    <strong>Network Switch — Rack 1U (Realistic PBR)</strong><br />
+    ลากเพื่อหมุน 360° · เลื่อนซูม · พอร์ต <b>10G</b> เรืองแสงฟ้า · <b>1G</b> เขียว · <b>PoE/โหลดสูง</b> เหลือง · <b>ผิดพลาด</b> แดง
+    <div id="legend">
+      <span><i style="background:#00f0ff"></i>10G</span>
+      <span><i style="background:#10b981"></i>1G</span>
+      <span><i style="background:#f59e0b"></i>PoE</span>
+      <span><i style="background:#ef4444"></i>Error</span>
+      <span><i style="background:#334155"></i>Inactive</span>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+    // ============================================================
+    // 1. Scene / Camera / Renderer  (ACES + exposure 1.0)
+    // ============================================================
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b0f19);
+    scene.fog = new THREE.Fog(0x0b0f19, 18, 40);
+
+    const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(6.2, 3.6, 6.4);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    // soft studio HDRI so dark metal catches edge highlights
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    // ============================================================
+    // 2. Materials (recommended palette)
+    // ============================================================
+    const chassisMat = new THREE.MeshStandardMaterial({
+      color: 0x1e293b, metalness: 0.7, roughness: 0.35,
+    });
+    const bezelMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a, metalness: 0.5, roughness: 0.6,
+    });
+    const inactiveMat = new THREE.MeshStandardMaterial({
+      color: 0x334155, metalness: 0.3, roughness: 0.7,
+    });
+    const trimMat = new THREE.MeshStandardMaterial({
+      color: 0x111827, metalness: 0.6, roughness: 0.4,
+    });
+    const metalPinMat = new THREE.MeshStandardMaterial({
+      color: 0xfbbf24, metalness: 1.0, roughness: 0.25,
+    });
+    const sfpCageMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0e17, metalness: 0.6, roughness: 0.5,
+    });
+
+    // emissive LED materials (toneMapped:false keeps them vivid for bloom)
+    function ledMaterial(hex) {
+      return new THREE.MeshStandardMaterial({
+        color: hex, emissive: hex, emissiveIntensity: 2.0,
+        roughness: 0.2, metalness: 0.0, toneMapped: false,
+      });
+    }
+    const LED = {
+      cyan:  0x00f0ff, // 10G active link
+      green: 0x10b981, // 1G healthy
+      amber: 0xf59e0b, // PoE / high load
+      red:   0xef4444, // error / offline
+      gray:  0x334155, // inactive
+    };
+    const ledMatCyan  = ledMaterial(LED.cyan);
+    const ledMatGreen = ledMaterial(LED.green);
+    const ledMatAmber = ledMaterial(LED.amber);
+    const ledMatRed   = ledMaterial(LED.red);
+
+    // ============================================================
+    // 3. Build the switch
+    // ============================================================
+    const W = 5.2, H = 0.92, D = 3.0;
+    const frontZ = D / 2;
+    const switchGroup = new THREE.Group();
+    scene.add(switchGroup);
+
+    // --- chassis body ---
+    const body = new THREE.Mesh(new RoundedBoxGeometry(W, H, D, 4, 0.08), chassisMat);
+    body.position.y = H / 2 + 0.04;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    switchGroup.add(body);
+
+    // top lid seam
+    const lid = new THREE.Mesh(new RoundedBoxGeometry(W * 0.99, 0.08, D * 0.98, 3, 0.05), trimMat);
+    lid.position.y = H + 0.02;
+    lid.castShadow = true;
+    switchGroup.add(lid);
+
+    // recessed front port panel (bezel)
+    const panel = new THREE.Mesh(new RoundedBoxGeometry(W - 0.3, H * 0.66, 0.06, 3, 0.03), bezelMat);
+    panel.position.set(0, H * 0.5 + 0.04, frontZ - 0.02);
+    switchGroup.add(panel);
+
+    // --- rack ears with mounting holes ---
+    function addRackEar(side) {
+      const ear = new THREE.Group();
+      const x = side * (W / 2 + 0.02);
+      const plate = new THREE.Mesh(new RoundedBoxGeometry(0.34, H * 0.92, 0.5, 3, 0.04), chassisMat);
+      plate.position.set(x, H * 0.5 + 0.04, frontZ - 0.55);
+      plate.castShadow = true;
+      ear.add(plate);
+      // mounting holes (top + bottom)
+      [H * 0.5 + 0.04 - 0.3, H * 0.5 + 0.04 + 0.3].forEach((yy) => {
+        const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.36, 16), new THREE.MeshStandardMaterial({ color: 0x05070c, roughness: 0.9 }));
+        hole.rotation.z = Math.PI / 2;
+        hole.position.set(x, yy, frontZ - 0.55);
+        ear.add(hole);
+      });
+      switchGroup.add(ear);
+    }
+    addRackEar(-1);
+    addRackEar(1);
+
+    // ============================================================
+    // 4. Ports
+    // ============================================================
+    const blinkers = []; // {mat, base, phase, speed, mode}
+
+    // ---- RJ45 copper port with status LED pair ----
+    // status: 'green' | 'cyan' | 'amber' | 'red' | 'inactive'
+    function createRJ45Port(x, y, status) {
+      const g = new THREE.Group();
+      g.position.set(x, y, frontZ);
+
+      // metal frame
+      const frame = new THREE.Mesh(new RoundedBoxGeometry(0.2, 0.16, 0.12, 2, 0.015),
+        new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.85, roughness: 0.35 }));
+      frame.castShadow = true;
+      g.add(frame);
+
+      // recessed black socket
+      const socket = new THREE.Mesh(new THREE.BoxGeometry(0.155, 0.115, 0.13),
+        new THREE.MeshStandardMaterial({ color: 0x05070c, roughness: 0.95, metalness: 0.1 }));
+      socket.position.z = -0.005;
+      g.add(socket);
+
+      // 8 gold pins
+      for (let p = 0; p < 8; p++) {
+        const pin = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.04, 0.03), metalPinMat);
+        pin.position.set(-0.062 + p * 0.0175, 0.028, -0.012);
+        g.add(pin);
+      }
+
+      // LED pair (link + activity) top corners
+      const linkMat = status === 'inactive' ? inactiveMat :
+        (status === 'green' ? ledMatGreen.clone() :
+         status === 'cyan' ? ledMatCyan.clone() :
+         status === 'amber' ? ledMatAmber.clone() :
+         ledMatRed.clone());
+
+      const linkLed = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.022, 0.012), linkMat);
+      linkLed.position.set(0.072, 0.058, 0.062);
+      g.add(linkLed);
+
+      // activity LED blinks; link LED is steady-ish
+      if (status !== 'inactive') {
+        const actMat = (status === 'amber' || status === 'red')
+          ? ledMatAmber.clone() : ledMatGreen.clone();
+        const actLed = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.022, 0.012), actMat);
+        actLed.position.set(-0.072, 0.058, 0.062);
+        g.add(actLed);
+        blinkers.push({ mat: actMat, base: 0.4, phase: Math.random() * Math.PI * 2, speed: 6 + Math.random() * 6, mode: 'blink' });
+      }
+      if (status !== 'inactive') {
+        blinkers.push({ mat: linkMat, base: 1.8, phase: Math.random() * Math.PI * 2, speed: 1.5, mode: 'pulse' });
+      }
+
+      switchGroup.add(g);
+      return g;
+    }
+
+    // ---- SFP+ uplink cage with pull latch + cyan LED ----
+    function createSfpPort(x, y) {
+      const g = new THREE.Group();
+      g.position.set(x, y, frontZ);
+
+      // cage mouth (wide recessed slot)
+      const cage = new THREE.Mesh(new RoundedBoxGeometry(0.34, 0.14, 0.16, 2, 0.02), sfpCageMat);
+      cage.castShadow = true;
+      g.add(cage);
+
+      // inner slot
+      const slot = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.07, 0.17),
+        new THREE.MeshStandardMaterial({ color: 0x020409, roughness: 1.0 }));
+      slot.position.z = -0.005;
+      g.add(slot);
+
+      // pull latch
+      const latch = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), trimMat);
+      latch.position.set(0, -0.06, 0.09);
+      g.add(latch);
+
+      // cyan LED strip above cage (10G active)
+      const cyanLed = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.018, 0.012), ledMatCyan.clone());
+      cyanLed.position.set(0, 0.09, 0.06);
+      g.add(cyanLed);
+      blinkers.push({ mat: cyanLed.material, base: 1.8, phase: Math.random() * 6.28, speed: 2.5, mode: 'pulse' });
+
+      switchGroup.add(g);
+      return g;
+    }
+
+    // ---- 24 x RJ45 data ports (one row) ----
+    const portY = H * 0.5 + 0.04;
+    const N = 24, spacing = 0.148;
+    const startX = -2.18;
+    const statusCycle = ['green', 'green', 'cyan', 'green', 'green', 'amber',
+                         'green', 'green', 'green', 'red', 'green', 'green',
+                         'inactive', 'green', 'green', 'green', 'green', 'green',
+                         'green', 'green', 'amber', 'green', 'green', 'inactive'];
+    for (let i = 0; i < N; i++) {
+      createRJ45Port(startX + i * spacing, portY, statusCycle[i % statusCycle.length]);
+    }
+
+    // ---- 4 x SFP+ uplinks (vertical stack on the right) ----
+    const sfpX = 2.0;
+    for (let i = 0; i < 4; i++) {
+      createSfpPort(sfpX, portY - 0.27 + i * 0.18);
+    }
+
+    // ---- front status LEDs (PWR / SYS) on the left ear area ----
+    function frontStatusLed(x, colorMat) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.01), colorMat);
+      m.position.set(x, portY + 0.1, frontZ + 0.01);
+      switchGroup.add(m);
+      return m;
+    }
+    frontStatusLed(-2.32, ledMatGreen.clone()); // PWR
+    const sysLed = frontStatusLed(-2.26, ledMatAmber.clone());
+    blinkers.push({ mat: sysLed.material, base: 1.6, phase: 0, speed: 3.0, mode: 'blink' });
+
+    // ============================================================
+    // 5. Glowing data-link fibers out of the SFP uplinks
+    // ============================================================
+    const linkPulses = [];
+    function createDataLink(sfpIndex, colorHex, curveOffset) {
+      const start = new THREE.Vector3(sfpX, portY - 0.27 + sfpIndex * 0.18, frontZ + 0.08);
+      const mid = new THREE.Vector3(sfpX + 0.8 + curveOffset, start.y + 0.6 + curveOffset, frontZ + 1.6);
+      const end = new THREE.Vector3(sfpX + 2.2 + curveOffset, start.y + 0.2, frontZ + 3.4);
+      const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+
+      // faint glass tube
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 40, 0.015, 8, false),
+        new THREE.MeshStandardMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 0.6, toneMapped: false, transparent: true, opacity: 0.5 })
+      );
+      switchGroup.add(tube);
+
+      // animated packet pulses
+      const packetMat = ledMaterial(colorHex);
+      for (let k = 0; k < 3; k++) {
+        const packet = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 12), packetMat.clone());
+        packet.userData = { curve, t: k / 3, speed: 0.25 + sfpIndex * 0.05 };
+        switchGroup.add(packet);
+        linkPulses.push(packet);
+      }
+    }
+    createDataLink(2, 0x00f0ff, 0.0);
+    createDataLink(3, 0x00f0ff, 0.5);
+
+    // ============================================================
+    // 6. Studio floor
+    // ============================================================
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(60, 60),
+      new THREE.MeshStandardMaterial({ color: 0x0b0f14, roughness: 0.9, metalness: 0.1 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const grid = new THREE.GridHelper(60, 60, 0x1e293b, 0x141d2b);
+    grid.position.y = 0.001;
+    scene.add(grid);
+
+    // ============================================================
+    // 7. Lighting
+    // ============================================================
+    scene.add(new THREE.AmbientLight(0x94a3b8, 0.4));
+
+    const keyLight = new THREE.DirectionalLight(0xe2e8f0, 1.5);
+    keyLight.position.set(-6, 9, 7); // top-front-left
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 40;
+    keyLight.shadow.camera.left = -10;
+    keyLight.shadow.camera.right = 10;
+    keyLight.shadow.camera.top = 10;
+    keyLight.shadow.camera.bottom = -10;
+    keyLight.shadow.bias = -0.0004;
+    scene.add(keyLight);
+
+    const rim = new THREE.DirectionalLight(0x38bdf8, 0.9);
+    rim.position.set(6, 4, -6);
+    scene.add(rim);
+
+    const fill = new THREE.DirectionalLight(0x5a7a99, 0.5);
+    fill.position.set(0, 6, -8);
+    scene.add(fill);
+
+    // ============================================================
+    // 8. Post-processing (selective bloom)
+    // ============================================================
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(
+      new THREE.Vector2(innerWidth, innerHeight),
+      0.4,  // strength (low)
+      0.5,  // radius
+      0.85  // threshold (only bright emissive glows)
+    );
+    composer.addPass(bloom);
+
+    // ============================================================
+    // 9. Controls + resize
+    // ============================================================
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.target.set(0, 0.5, 0);
+    controls.minDistance = 4;
+    controls.maxDistance = 20;
+    controls.maxPolarAngle = Math.PI / 1.9;
+
+    addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+      composer.setSize(innerWidth, innerHeight);
+    });
+
+    // ============================================================
+    // 10. Animate
+    // ============================================================
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // LED blinking / pulsing
+      for (const b of blinkers) {
+        if (b.mode === 'blink') {
+          b.mat.emissiveIntensity = (Math.sin(t * b.speed + b.phase) > 0) ? 2.2 : b.base;
+        } else {
+          b.mat.emissiveIntensity = b.base + Math.sin(t * b.speed + b.phase) * 0.6;
+        }
+      }
+
+      // data packet pulses traveling along the fiber curves
+      for (const p of linkPulses) {
+        p.userData.t = (p.userData.t + p.userData.speed * 0.016) % 1;
+        const pos = p.userData.curve.getPoint(p.userData.t);
+        p.position.copy(pos);
+      }
+
+      controls.update();
+      composer.render();
+    }
+    animate();
+  </script>
+</body>
+</html>
